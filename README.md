@@ -149,4 +149,4 @@ and final strand-symmetric merge) and plotting functions are planned next.
 
 Jace Ellis (ellisjacem@gmail.com), data science student, University of
 Missouri–Columbia. Developed for CpG methylation pipeline comparison work
-in the McKay lab.
+under the guidance of Shangqian Xie (https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN).
