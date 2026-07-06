@@ -128,14 +128,6 @@ chr  pos  TRead  MRead  ML  [strand]
 `strand_reference` (a `chr`, `CpG_pos`, `strand` table) so
 `collapse_cpg_strand()` can join it in.
 
-## Development
-
-```r
-devtools::load_all()   # load all functions in R/
-devtools::test()       # run the test suite (tests/testthat/)
-devtools::document()   # regenerate documentation and NAMESPACE
-devtools::check()      # run a full package check
-```
 
 ### Status
 
