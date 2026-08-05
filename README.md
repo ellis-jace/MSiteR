@@ -33,6 +33,9 @@ cross-pipeline table.
 raw pipeline files (+ optional strand reference)
         │
         ▼
+chunk_by_chromosome()       # if necessary, separate chromosomes for individual pipeline calls
+        │
+        ▼
 collapse_cpg_strand()        # collapse +/- strand pairs into symmetric sites, per pipeline
         │
         ▼
@@ -70,7 +73,8 @@ result <- prepare_filtered_cpg_table(
     Biscuit = "SAMN123.CG.meth.biscuit.chr.txt"
   ),
   strand_reference = "sheep_cpg_all.txt",
-  strand_reference_for = "Biscuit"
+  strand_reference_for = "Biscuit",
+  chunk_by_chromosome = TRUE
 )
 
 result$thresholds   # per-pipeline S1/S2 read-depth cutoffs used
@@ -81,6 +85,45 @@ result$merged        # final wide table: chr, pos, and each pipeline's
 
 ### Or call each step manually, for full control
 
+#### `chunk_by_chromosome` == TRUE: 
+```r
+# 1. Divide Chromosomes into chunks for separate pipeline calls
+chunks <- chunk_by_chromosome(pipelines = list(
+    Bismark = "Bismark.chr.txt",
+    Bwameth = "bwameth.chr.txt",
+    Encode  = "ENCODE.chr.txt",
+    Biscuit = "biscuit.chr.txt"
+  )
+)
+
+# 2. Iterate through chromosomes and call [run_pipeline_on_chunk()]
+all_merged <- list()      
+all_unfiltered <- list()
+
+for (chr in names(chunks)) {
+  result <- run_pipeline_on_chunk(chunks[[chr]])
+  all_merged[[chr]] <- result$merged
+  all_unfiltered[[chr]] <- result$unfiltered
+
+  rm(result)
+  gc(verbose = FALSE)
+}
+
+# 3. Combine and recalculate global thresholds
+unfiltered <- data.table::rbindlist(all_unfiltered)
+merged <- data.table::rbindlist(all_merged)
+thresholds <- calculate_strand_thresholds(unfiltered)
+
+# 4. Filter each pipeline using its own thresholds
+filtered <- Map(function(dt, name) filter_by_strand(dt, name, thresholds),
+                 collapsed, names(collapsed))
+
+# 5. Merge into one wide table
+merged <- merge_filtered_pipelines(filtered)
+```
+
+
+#### `chunk_by_chromosome` == FALSE:
 ```r
 # 1. Collapse +/- strand pairs, per pipeline
 collapsed <- list(
@@ -106,10 +149,12 @@ merged <- merge_filtered_pipelines(filtered)
 
 | Function | Purpose |
 |---|---|
+| `chunk_by_chromosome()` | Subset each pipeline's data.table to individual chromosomes. |
 | `collapse_cpg_strand()` | Collapses complementary +/- strand CpG calls for one pipeline into symmetric per-site totals. Joins in strand from a reference file if the input lacks a `strand` column (e.g. Biscuit). |
 | `prepare_unfiltered_dt()` | Reshapes a named list of collapsed pipeline tables into one long-format table (`reads`, `Pipeline`, `Strand`) for thresholding and plotting. |
 | `calculate_strand_thresholds()` | Computes per-pipeline single-strand (S1) and double-strand (S2) read-depth cutoffs from the long-format table. |
 | `filter_by_strand()` | Filters one pipeline's collapsed table using its strand-based thresholds. |
+| `run_pipeline_on_chunk()` | Wrapper function that combines [collapse_cpg_strand()], [prepare_unfiltered_dt()], and [filter_by_strand()] to call data pipelines for a selected subset of data. |
 | `merge_filtered_pipelines()` | Joins strand-filtered tables from multiple pipelines by `chr`/`pos` into one wide table, with pipeline-prefixed column names. |
 | `prepare_filtered_cpg_table()` | Convenience wrapper chaining all of the above; returns `merged`, `thresholds`, and `unfiltered`. |
 

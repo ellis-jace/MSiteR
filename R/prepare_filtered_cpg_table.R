@@ -7,9 +7,10 @@
 #'
 #' Each underlying step ([collapse_cpg_strand()], [prepare_unfiltered_dt()],
 #' [calculate_strand_thresholds()], [filter_by_strand()],
-#' [merge_filtered_pipelines()]) remains independently callable if you need
-#' to inspect or re-plot an intermediate stage (e.g. thresholds, or
-#' unfiltered vs. filtered distributions).
+#' [merge_filtered_pipelines()], which are called from [run_pipeline_on_chunk()])
+#' remains independently callable if you need to inspect or re-plot an
+#' intermediate stage. Use [chunk_by_chromosome()] to partition data by
+#' chromosome before custom workflows.
 #'
 #' @param pipelines A named list of raw file paths or data.tables, one per
 #'   pipeline (e.g. Bismark, Bwameth, Biscuit, Encode).
@@ -18,30 +19,50 @@
 #'   `strand_reference_for`.
 #' @param strand_reference_for Character vector of pipeline names needing
 #'   `strand_reference` (default `"Biscuit"`).
+#' @param chunk_by_chromosome Logical; if TRUE, process each chromosome
+#'   separately to optimize memory usage (default FALSE).
 #'
 #' @return A list with `merged` (the joined, strand-filtered wide
 #'   data.table), `thresholds` (the per-pipeline threshold table), and
 #'   `unfiltered` (the long-format pre-filter table, for plotting/QC).
 #' @export
 prepare_filtered_cpg_table <- function(pipelines,
-                                       strand_reference = NULL,
-                                       strand_reference_for = "Biscuit") {
+                                       strand_reference,
+                                       strand_reference_for = "Biscuit",
+                                       chunk_by_chromosome = FALSE) {
 
-  # 1. collapse strand, per pipeline
-  collapsed <- Map(function(x, name) {
-    ref <- if (name %in% strand_reference_for) strand_reference else NULL
-    collapse_cpg_strand(x, strand_reference = ref)
-  }, pipelines, names(pipelines))
+  if (!chunk_by_chromosome) {
+    # Original behavior: process full dataset in one pass
+    result <- run_pipeline_on_chunk(pipelines,
+                                    strand_reference,
+                                    strand_reference_for)
+    thresholds <- calculate_strand_thresholds(result$unfiltered)
 
-  # 2. long-format table + thresholds
-  unfiltered <- prepare_unfiltered_dt(collapsed)
-  thresholds <- calculate_strand_thresholds(unfiltered)
+    list(merged = result$merged, thresholds = thresholds, unfiltered = result$unfiltered)
 
-  # 3. filter each pipeline, then merge
-  filtered <- Map(function(dt, name) filter_by_strand(dt, name, thresholds),
-                  collapsed, names(collapsed))
+  } else {
+    # Chunked behavior: process one chromosome at a time
+    chunks <- chunk_by_chromosome(pipelines)
 
-  merged <- merge_filtered_pipelines(filtered)
+    all_merged <- list()
+    all_unfiltered <- list()
 
-  list(merged = merged, thresholds = thresholds, unfiltered = unfiltered)
+    for (chr in names(chunks)) {
+      result <- run_pipeline_on_chunk(chunks[[chr]],
+                                      strand_reference,
+                                      strand_reference_for)
+      all_merged[[chr]] <- result$merged
+      all_unfiltered[[chr]] <- result$unfiltered
+
+      rm(result)
+      gc(verbose = FALSE)
+    }
+
+    # Combine and recalculate global thresholds
+    unfiltered <- data.table::rbindlist(all_unfiltered)
+    merged <- data.table::rbindlist(all_merged)
+    thresholds <- calculate_strand_thresholds(unfiltered)
+
+    list(merged = merged, thresholds = thresholds, unfiltered = unfiltered)
+  }
 }

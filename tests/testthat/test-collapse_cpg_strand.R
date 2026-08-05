@@ -10,10 +10,10 @@ test_that("collapse_cpg_strand merges a +/- pair into one symmetric site", {
   result <- collapse_cpg_strand(dt)
 
   expect_equal(nrow(result), 1)
-  expect_equal(result$pos, 100)             # keeps the + strand position
+  expect_equal(result$pos, 100)
   expect_equal(result$TRead, 22)            # 10 + 12
   expect_equal(result$MRead, 11)            # 5 + 6
-  expect_equal(result$ML, 11 / 22)          # recalculated, not averaged
+  expect_equal(result$ML, 11 / 22)          # recalculated
   expect_equal(result$n, 2)
 })
 
