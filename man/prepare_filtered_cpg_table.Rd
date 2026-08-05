@@ -6,8 +6,9 @@
 \usage{
 prepare_filtered_cpg_table(
   pipelines,
-  strand_reference = NULL,
-  strand_reference_for = "Biscuit"
+  strand_reference,
+  strand_reference_for = "Biscuit",
+  chunk_by_chromosome = FALSE
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ pipelines whose raw files lack a \code{strand} column, matched against
 
 \item{strand_reference_for}{Character vector of pipeline names needing
 \code{strand_reference} (default \code{"Biscuit"}).}
+
+\item{chunk_by_chromosome}{Logical; if TRUE, process each chromosome
+separately to optimize memory usage (default FALSE).}
 }
 \value{
 A list with \code{merged} (the joined, strand-filtered wide
@@ -35,7 +39,8 @@ then joins the filtered tables by chr/pos into one wide table.
 \details{
 Each underlying step (\code{\link[=collapse_cpg_strand]{collapse_cpg_strand()}}, \code{\link[=prepare_unfiltered_dt]{prepare_unfiltered_dt()}},
 \code{\link[=calculate_strand_thresholds]{calculate_strand_thresholds()}}, \code{\link[=filter_by_strand]{filter_by_strand()}},
-\code{\link[=merge_filtered_pipelines]{merge_filtered_pipelines()}}) remains independently callable if you need
-to inspect or re-plot an intermediate stage (e.g. thresholds, or
-unfiltered vs. filtered distributions).
+\code{\link[=merge_filtered_pipelines]{merge_filtered_pipelines()}}, which are called from \code{\link[=run_pipeline_on_chunk]{run_pipeline_on_chunk()}})
+remains independently callable if you need to inspect or re-plot an
+intermediate stage. Use \code{\link[=chunk_by_chromosome]{chunk_by_chromosome()}} to partition data by
+chromosome before custom workflows.
 }
