@@ -6,7 +6,7 @@
 \usage{
 prepare_filtered_cpg_table(
   pipelines,
-  strand_reference,
+  strand_reference = NULL,
   strand_reference_for = "Biscuit",
   chunk_by_chromosome = FALSE
 )

@@ -6,13 +6,13 @@
 \usage{
 run_pipeline_on_chunk(
   chr_pipelines,
-  strand_reference,
+  strand_reference = NULL,
   strand_reference_for = "Biscuit"
 )
 }
 \arguments{
-\item{chr_pipelines}{Individual chromosome chunks (the column outputs of
-\code{chunk_by_chromosome}).}
+\item{chr_pipelines}{A named list of pipeline data.tables subsetted to a single
+chromosome (e.g. from \code{\link[=chunk_by_chromosome]{chunk_by_chromosome()}}, or manually created).}
 
 \item{strand_reference}{File path or data.table providing strand info for
 pipelines whose raw files lack a \code{strand} column, matched against
