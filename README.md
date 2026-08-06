@@ -1,35 +1,34 @@
+---
+
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
 # methylmergeR
 
-Tools for filtering, comparing, and merging CpG methylation calls across
-multiple alignment/calling pipelines (Bismark, BWA-meth, Biscuit, ENCODE),
-including strand-level read-depth thresholding and strand-symmetric CpG
-merging.
+Tools for filtering, comparing, and merging CpG methylation calls across multiple alignment/calling pipelines (Bismark, BWA-meth, Biscuit, ENCODE), including strand-level read-depth thresholding and strand-symmetric CpG merging.
 
-This package grew out of a manual, script-based workflow for comparing CpG
-methylation calls across four pipelines on sheep/cattle genomic references.
-It replaces four near-duplicate per-pipeline scripts with a small set of
-tested, reusable functions.
+This package grew out of a manual, script-based workflow for comparing CpG methylation calls across four pipelines on sheep/cattle genomic references. It replaces four near-duplicate per-pipeline scripts with a small set of tested, reusable functions.
 
 ## Installation
 
-```r
+``` r
 # install.packages("devtools")
 devtools::install_github("ellis-jace/methylmergeR")
 ```
 
 Or, for local development:
 
-```r
+``` r
 devtools::load_all("path/to/methylmergeR")
 ```
 
 ## Pipeline overview
 
-The package currently covers **Stage 1** of the methylation-calling
-workflow: turning raw, per-strand pipeline output into one strand-filtered,
-cross-pipeline table.
+The package currently covers **Stage 1** of the methylation-calling workflow: turning raw, per-strand pipeline output into one strand-filtered, cross-pipeline table.
 
-```
+```         
 raw pipeline files (+ optional strand reference)
         │
         ▼
@@ -51,17 +50,13 @@ filter_by_strand()           # apply thresholds, per pipeline
 merge_filtered_pipelines()   # join filtered pipelines by chr + pos into one wide table
 ```
 
-`prepare_filtered_cpg_table()` is a convenience wrapper that runs this
-entire chain in one call, while still returning the intermediate
-`thresholds` and `unfiltered` tables so nothing is hidden.
+`prepare_filtered_cpg_table()` is a convenience wrapper that runs this entire chain in one call, while still returning the intermediate `thresholds` and `unfiltered` tables so nothing is hidden.
 
-Every step above is also available and testable on its own — useful for
-inspecting an intermediate result, re-plotting a distribution, or
-re-running just one pipeline after a change.
+Every step above is also available and testable on its own — useful for inspecting an intermediate result, re-plotting a distribution, or re-running just one pipeline after a change.
 
 ## Quick start
 
-```r
+``` r
 library(methylmergeR)
 
 # Run the full first stage in one call
@@ -87,7 +82,7 @@ result$merged        # final wide table: chr, pos, and each pipeline's
 
 Here's a complete example using synthetic methylation data:
 
-```r
+``` r
 library(methylmergeR)
 
 # Create sample data for two pipelines, two chromosomes
@@ -129,8 +124,9 @@ head(result$merged)
 
 ### Or call each step manually, for full control
 
-#### `chunk_by_chromosome` == TRUE: 
-```r
+#### `chunk_by_chromosome` == TRUE:
+
+``` r
 # 1. Divide Chromosomes into chunks for separate pipeline calls
 chunks <- chunk_by_chromosome(pipelines = list(
     Bismark = "Bismark.chr.txt",
@@ -166,9 +162,9 @@ filtered <- Map(function(dt, name) filter_by_strand(dt, name, thresholds),
 merged <- merge_filtered_pipelines(filtered)
 ```
 
-
 #### `chunk_by_chromosome` == FALSE:
-```r
+
+``` r
 # 1. Collapse +/- strand pairs, per pipeline
 collapsed <- list(
   Bismark = collapse_cpg_strand("Bismark.chr.txt"),
@@ -192,7 +188,7 @@ merged <- merge_filtered_pipelines(filtered)
 ## Function reference
 
 | Function | Purpose |
-|---|---|
+|------------------------------------|------------------------------------|
 | `chunk_by_chromosome()` | Subset each pipeline's data.table to individual chromosomes. |
 | `collapse_cpg_strand()` | Collapses complementary +/- strand CpG calls for one pipeline into symmetric per-site totals. Joins in strand from a reference file if the input lacks a `strand` column (e.g. Biscuit). |
 | `prepare_unfiltered_dt()` | Reshapes a named list of collapsed pipeline tables into one long-format table (`reads`, `Pipeline`, `Strand`) for thresholding and plotting. |
@@ -202,32 +198,24 @@ merged <- merge_filtered_pipelines(filtered)
 | `merge_filtered_pipelines()` | Joins strand-filtered tables from multiple pipelines by `chr`/`pos` into one wide table, with pipeline-prefixed column names. |
 | `prepare_filtered_cpg_table()` | Convenience wrapper chaining all of the above; returns `merged`, `thresholds`, and `unfiltered`. |
 
-Full argument/return documentation is available via `?function_name` once
-the package is loaded, e.g. `?collapse_cpg_strand`.
+Full argument/return documentation is available via `?function_name` once the package is loaded, e.g. `?collapse_cpg_strand`.
 
 ## Input format
 
 Raw pipeline files are expected as tab-delimited, no header, with columns:
 
-```
+```         
 chr  pos  TRead  MRead  ML  [strand]
 ```
 
-`strand` is optional in the file itself — if absent, pass a
-`strand_reference` (a `chr`, `CpG_pos`, `strand` table) so
-`collapse_cpg_strand()` can join it in.
-
+`strand` is optional in the file itself — if absent, pass a `strand_reference` (a `chr`, `CpG_pos`, `strand` table) so `collapse_cpg_strand()` can join it in.
 
 ### Status
 
-Stage 1 (strand collapsing → strand filtering → cross-pipeline merge) is
-implemented and covered by unit tests (100+ passing as of this writing).
+Stage 1 (strand collapsing → strand filtering → cross-pipeline merge) is implemented and covered by unit tests (100+ passing as of this writing).
 
-Stage 2 (cross-pipeline consensus statistics, tiered consensus filtering,
-and final strand-symmetric merge) and plotting functions are planned next.
+Stage 2 (cross-pipeline consensus statistics, tiered consensus filtering, and final strand-symmetric merge) and plotting functions are planned next.
 
 ## Author
 
-Jace Ellis (ellisjacem@gmail.com), data science student, University of
-Missouri–Columbia. Developed for CpG methylation pipeline comparison work
-under the guidance of Shangqian Xie (https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN).
+Jace Ellis ([ellisjacem\@gmail.com](mailto:ellisjacem@gmail.com){.email}), data science student, University of Missouri–Columbia. Developed for CpG methylation pipeline comparison work under the guidance of Shangqian Xie (<https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN>).
