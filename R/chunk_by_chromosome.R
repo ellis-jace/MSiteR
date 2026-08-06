@@ -21,8 +21,8 @@ chunk_by_chromosome <- function(pipelines) {
   chromosomes <- sort(unique(do.call(c, lapply(all_data, function(x) x$chr))))
 
   # Subset each pipeline to each chromosome
-  chunks <- lapply(setNames(chromosomes, chromosomes), function(chr) {
-    lapply(all_data, function(x) x[x$chr == chr, ])
+  chunks <- lapply(setNames(chromosomes, chromosomes), function(chr_name) {
+    lapply(all_data, function(x) x[x$chr == chr_name, ])
   })
 
   chunks

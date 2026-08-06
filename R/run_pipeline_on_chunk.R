@@ -6,8 +6,8 @@
 #' [filter_by_strand()]) remain independently callable for personal inspection
 #' plotting.
 #'
-#' @param chr_pipelines Individual chromosome chunks (the column outputs of
-#'  `chunk_by_chromosome`).
+#' @param chr_pipelines A named list of pipeline data.tables subsetted to a single
+#' chromosome (e.g. from [chunk_by_chromosome()], or manually created).
 #' @param strand_reference File path or data.table providing strand info for
 #'   pipelines whose raw files lack a `strand` column, matched against
 #'   `strand_reference_for`.
@@ -18,7 +18,7 @@
 #'   data.table), and `unfiltered` (raw, chromosome-specific data.table)
 #' @export
 run_pipeline_on_chunk <- function(chr_pipelines,
-                                  strand_reference,
+                                  strand_reference = NULL,
                                   strand_reference_for = 'Biscuit') {
   chr_collapsed <- Map(function(x, name) {
     ref <- if (name %in% strand_reference_for) strand_reference else NULL

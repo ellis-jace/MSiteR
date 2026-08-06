@@ -27,7 +27,7 @@
 #'   `unfiltered` (the long-format pre-filter table, for plotting/QC).
 #' @export
 prepare_filtered_cpg_table <- function(pipelines,
-                                       strand_reference,
+                                       strand_reference = NULL,
                                        strand_reference_for = "Biscuit",
                                        chunk_by_chromosome = FALSE) {
 
