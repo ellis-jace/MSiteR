@@ -67,10 +67,10 @@ library(methylmergeR)
 # Run the full first stage in one call
 result <- prepare_filtered_cpg_table(
   pipelines = list(
-    Bismark = "SAMN123.CG.meth.Bismark.chr.txt",
-    Bwameth = "SAMN123.CG.meth.bwameth.chr.txt",
-    Encode  = "SAMN123.CG.meth.chr.ENCODE.txt",
-    Biscuit = "SAMN123.CG.meth.biscuit.chr.txt"
+    Bismark = "Bismark.chr.txt",
+    Bwameth = "bwameth.chr.txt",
+    Encode  = "ENCODE.chr.txt",
+    Biscuit = "biscuit.chr.txt"
   ),
   strand_reference = "sheep_cpg_all.txt",
   strand_reference_for = "Biscuit",
@@ -81,6 +81,50 @@ result$thresholds   # per-pipeline S1/S2 read-depth cutoffs used
 result$unfiltered    # long-format table, pre-filtering (for QC/plotting)
 result$merged        # final wide table: chr, pos, and each pipeline's
                       # <name>_TR / <name>_MR / <name>_ML / <name>_StrN
+```
+
+## Example
+
+Here's a complete example using synthetic methylation data:
+
+```r
+library(methylmergeR)
+
+# Create sample data for two pipelines, two chromosomes
+bismark <- data.table::data.table(
+  chr = c("chr1", "chr1", "chr1", "chr2", "chr2"),
+  pos = c(100, 101, 102, 1000, 1001),
+  TRead = c(20, 22, 18, 25, 30),
+  MRead = c(10, 11, 9, 12, 15),
+  ML = c(0.50, 0.50, 0.50, 0.48, 0.50),
+  strand = c("+", "-", "+", "+", "-")
+)
+
+bwameth <- data.table::data.table(
+  chr = c("chr1", "chr1", "chr2", "chr2"),
+  pos = c(100, 101, 1000, 1001),
+  TRead = c(18, 20, 28, 32),
+  MRead = c(9, 10, 14, 16),
+  ML = c(0.50, 0.50, 0.50, 0.50),
+  strand = c("+", "-", "+", "-")
+)
+
+# Run the full pipeline
+result <- prepare_filtered_cpg_table(
+  pipelines = list(Bismark = bismark, Bwameth = bwameth),
+  chunk_by_chromosome = FALSE
+)
+
+# View strand-specific thresholds per pipeline
+result$thresholds
+
+# View the merged, filtered output
+head(result$merged)
+#       chr  pos Bismark_TR Bismark_MR Bismark_ML Bwameth_TR Bwameth_MR Bwameth_ML
+# 1:  chr1  100         20         10       0.50         18          9       0.50
+# 2:  chr1  101         22         11       0.50         20         10       0.50
+# 3:  chr2 1000         25         12       0.48         28         14       0.50
+# 4:  chr2 1001         30         15       0.50         32         16       0.50
 ```
 
 ### Or call each step manually, for full control
@@ -177,7 +221,7 @@ chr  pos  TRead  MRead  ML  [strand]
 ### Status
 
 Stage 1 (strand collapsing → strand filtering → cross-pipeline merge) is
-implemented and covered by unit tests (60 passing as of this writing).
+implemented and covered by unit tests (100+ passing as of this writing).
 
 Stage 2 (cross-pipeline consensus statistics, tiered consensus filtering,
 and final strand-symmetric merge) and plotting functions are planned next.
