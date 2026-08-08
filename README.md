@@ -1,10 +1,3 @@
----
-
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # methylmergeR
 
 Tools for filtering, comparing, and merging CpG methylation calls across multiple alignment/calling pipelines (Bismark, BWA-meth, Biscuit, ENCODE), including strand-level read-depth thresholding and strand-symmetric CpG merging.
@@ -218,4 +211,4 @@ Stage 2 (cross-pipeline consensus statistics, tiered consensus filtering, and fi
 
 ## Author
 
-Jace Ellis ([ellisjacem\@gmail.com](mailto:ellisjacem@gmail.com){.email}), data science student, University of Missouri–Columbia. Developed for CpG methylation pipeline comparison work under the guidance of Shangqian Xie (<https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN>).
+Jace Ellis ([ellisjacem\@gmail.com](mailto:ellisjacem@gmail.com)), data science student, University of Missouri–Columbia. Developed for CpG methylation pipeline comparison work under the guidance of Shangqian Xie (<https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN>).
