@@ -1,4 +1,4 @@
-Package: methylmergeR
+Package: MSiteR
 Type: Package
 Title: CpG Methylation Cross-Pipeline Consensus Filtering
 Version: 0.1.0
@@ -30,5 +30,5 @@ Imports:
     UpSetR
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
-URL: https://github.com/ellis-jace/methylmergeR
-BugReports: https://github.com/ellis-jace/methylmergeR/issues
+URL: https://github.com/ellis-jace/MSiteR
+BugReports: https://github.com/ellis-jace/MSiteR/issues

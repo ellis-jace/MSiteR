@@ -1,4 +1,4 @@
-# methylmergeR
+# MSiteR
 
 Tools for filtering, comparing, and merging CpG methylation calls across multiple alignment/calling pipelines (Bismark, BWA-meth, Biscuit, ENCODE), including strand-level read-depth thresholding and strand-symmetric CpG merging.
 
@@ -8,13 +8,13 @@ This package grew out of a manual, script-based workflow for comparing CpG methy
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("ellis-jace/methylmergeR")
+devtools::install_github("ellis-jace/MSiteR")
 ```
 
 Or, for local development:
 
 ``` r
-devtools::load_all("path/to/methylmergeR")
+devtools::load_all("path/to/MSiteR")
 ```
 
 ## Pipeline overview
@@ -50,7 +50,7 @@ Every step above is also available and testable on its own — useful for inspec
 ## Quick start
 
 ``` r
-library(methylmergeR)
+library(MSiteR)
 
 # Run the full first stage in one call
 result <- prepare_filtered_cpg_table(
@@ -76,7 +76,7 @@ result$merged        # final wide table: chr, pos, and each pipeline's
 Here's a complete example using synthetic methylation data:
 
 ``` r
-library(methylmergeR)
+library(MSiteR)
 
 # Create sample data for two pipelines, two chromosomes
 bismark <- data.table::data.table(
