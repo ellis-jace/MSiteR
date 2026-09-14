@@ -1,58 +1,82 @@
-#' Boxplot for Strand 1 vs Strand 2.
+#' Boxplot for Strand 1 vs Strand 2 reads
+#'
+#' Shows read depth distribution for single-strand (S1) vs double-strand (S2)
+#' methylation sites across pipelines. Includes Wilcoxon test statistics.
+#'
 #' @param result Output from [prepare_filtered_cpg_table()]
-#' @param outdir Where to save PDFs
+#' @param outdir Optional directory to save PDF. If NULL, plot is not saved.
+#' @param sample_name Sample ID for filename (default "sample")
+#'
+#' @return ggplot object (invisibly if saved to file)
 #' @export
-plot_strand_filtering <- function(result, outdir = "."){
-  unfiltered <- result$unfiltered
+#'
+#' @examples
+#' \dontrun{
+#' result <- prepare_filtered_cpg_table(pipelines)
+#' plot_strand_boxplot(result, outdir = "figs/", sample_name = "Lab1")
+#' }
+plot_strand_boxplot <- function(result,
+                                  outdir = NULL,
+                                  sample_name = "sample") {
 
-  # Use unfiltered data.table for before plot
-  plot_dt <- unfiltered[, Pipeline := factor(Pipeline, levels = result$thresholds['Pipeline', ])]
+  # Validate input
+  unfiltered <- result$unfiltered
+  if (!all(c("Pipeline", "Strand", "reads") %in% names(unfiltered))) {
+    stop("result$unfiltered must contain columns: Pipeline, Strand, reads")
+  }
+
+  # Prepare data
+  plot_dt <- data.table::copy(unfiltered)
+  plot_dt[, Pipeline := factor(Pipeline,
+                               levels = unique(result$thresholds$Pipeline))]
   plot_dt[, Strand := factor(Strand, levels = c("S1", "S2"))]
 
-  # Optimization: Downsample large datasets to 1M rows per group
-  # for faster statistical tests and plotting.
-  plot_sub <- plot_dt[, .SD[sample(.N, min(.N, 1000000))], by = .(Pipeline, Strand)]
+  # Downsample for speed
+  set.seed(123)
+  plot_sub <- plot_dt[, .SD[sample(.N, min(.N, 1000000))],
+                      by = .(Pipeline, Strand)]
 
-  # Generate boxplot with statistical annotations
-  p_box <- ggplot2::ggplot(plot_sub, aes(x = Pipeline, y = reads, fill = Strand)) +
-    ggplot2::geom_boxplot(outlier.shape = NA,    # Hide individual outlier points)
-                          notch = T,
+  # Build plot
+  p_box <- ggplot2::ggplot(plot_sub, ggplot2::aes(x = Pipeline, y = reads, fill = Strand)) +
+    ggplot2::geom_boxplot(outlier.shape = NA,
+                          notch = TRUE,
                           width = 0.6,
                           size = 0.7,
-                          color = 'black') +
-    # Color scheme: S1 light gray, S2 warm red
-    scale_fill_manual(values = c("S1" = "#BDBDBD", "S2" = "#E64B35"),
-                      labels = c("S1" = "Single-strand", "S2" = "Double-strand")) +
-    # Add Wilcoxon test p-values
-    ggpubr::stat_compare_means(aes(group = Strand),
+                          color = "black") +
+    ggplot2::scale_fill_manual(
+      values = c("S1" = "#BDBDBD", "S2" = "#E64B35"),
+      labels = c("S1" = "Single-strand", "S2" = "Double-strand")) +
+    ggpubr::stat_compare_means(ggplot2::aes(group = Strand),
                                label = "p.format",
                                method = "wilcox.test",
                                label.y = 75,
                                size = 4,
-                               fontface = 'italic') +
-    # Add significance stars (* p < 0.05, ** p < 0.01, etc.)
-    ggpubr::stat_compare_means(aes(group = Strand),
-                               label = 'p.signif',
-                               method = 'wilcox.test',
+                               fontface = "italic") +
+    ggpubr::stat_compare_means(ggplot2::aes(group = Strand),
+                               label = "p.signif",
+                               method = "wilcox.test",
                                label.y = 71,
                                size = 5) +
-    # Focus on core range (0-80 read covers 99% of data)
-    ggplot2::coord_cartesian(ylim = c(0,80)) +
+    ggplot2::coord_cartesian(ylim = c(0, 80)) +
     ggplot2::scale_y_continuous(breaks = seq(0, 80, 20),
-                                expand = ggplot2::expansion(mult = c(0,0.0,5))) +
-    # Publication-quality theme
-    ggpubr::theme_pubr(base_size = 14, legend = 'top') +
+                                expand = ggplot2::expansion(mult = c(0, 0.05))) +
+    ggpubr::theme_pubr(base_size = 14, legend = "top") +
     ggplot2::theme(
-      axis.title = ggplot2::element_text(face = 'bold'),
-      axis.text = ggplot2::element_text(color = 'black'),
-      plot.title = ggplot2::element_text(hjust = 0.5, face = 'bold', size = 16),
-      panel.grid.major.y = ggplot2::element_line(color = 'gray90', linetype = 'dashed')) +
-    ggplot2::labs(x = 'Pipelines',
-                  y = 'Total Reads Count',
-                  title = 'Total Reads count distribution of S1 and S2',
-                  fill = 'Strand Status')
+      axis.title = ggplot2::element_text(face = "bold"),
+      axis.text = ggplot2::element_text(color = "black"),
+      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 16),
+      panel.grid.major.y = ggplot2::element_line(color = "gray90", linetype = "dashed")) +
+    ggplot2::labs(x = "Pipelines",
+                  y = "Total Reads Count",
+                  title = "Total Reads count distribution of S1 and S2",
+                  fill = "Strand Status")
 
-    # Save figure to provided out-directory
-    ggplot2::ggsave(paste0(outdir,'/',sample,'_01Fig_Boxplot_S1_S2.pdf'), p_box,
-                    width = 8, height = 6)
+  # Save if outdir provided
+  if (!is.null(outdir)) {
+    filename <- file.path(outdir, paste0(sample_name, "_01Fig_Boxplot_S1_S2.pdf"))
+    ggplot2::ggsave(filename, p_box, width = 8, height = 6)
+    message("Saved: ", filename)
+  }
+
+  return(invisible(p_box))
 }
