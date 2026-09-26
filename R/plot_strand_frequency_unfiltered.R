@@ -51,18 +51,18 @@ plot_strand_frequency_unfiltered <- function(result,
   p_freq <- ggplot2::ggplot(freq_dt,
                             ggplot2::aes(x = reads, y = Frequency,
                                          color = Strand, fill = Strand)) +
-    ggplot2::geom_area(position = "identity", alpha = 0.2, size = 0.8) +
-    ggplot2::geom_line(size = 1)
+    ggplot2::geom_area(position = "identity", alpha = 0.2, linewidth = 0.8) +
+    ggplot2::geom_line(linewidth = 1)
 
   # Conditionally add threshold lines
   if (show_thresholds) {
     p_freq <- p_freq +
       ggplot2::geom_vline(data = s1_marks,
                           ggplot2::aes(xintercept = Min_Reads),
-                          color = "#757575", linetype = "dashed", size = 0.7) +
+                          color = "#757575", linetype = "dashed", linewidth = 0.7) +
       ggplot2::geom_vline(data = s2_marks,
                           ggplot2::aes(xintercept = Min_Reads),
-                          color = "#E64B35", linetype = "dashed", size = 0.7) +
+                          color = "#E64B35", linetype = "dashed", linewidth = 0.7) +
       ggplot2::geom_text(data = s1_marks,
                          ggplot2::aes(x = Min_Reads, y = -0.01, label = Min_Reads),
                          inherit.aes = FALSE, color = "#757575",

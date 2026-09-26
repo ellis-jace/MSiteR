@@ -1,4 +1,4 @@
-test_that("prepare_filtered_cpg_table with chunk_by_chromosome=TRUE returns correct structure", {
+test_that("run_strand_filtering with chunk_by_chromosome=TRUE returns correct structure", {
   bis <- data.table::data.table(
     chr = c("chr1", "chr1", "chr2", "chr2"),
     pos = c(1, 2, 100, 200),
@@ -7,7 +7,7 @@ test_that("prepare_filtered_cpg_table with chunk_by_chromosome=TRUE returns corr
     ML = c(0.5, 0.5, 0.48, 0.5),
     strand = "+"
   )
-  result <- prepare_filtered_cpg_table(list(Bismark = bis), chunk_by_chromosome = TRUE)
+  result <- run_strand_filtering(list(Bismark = bis), chunk_by_chromosome = TRUE)
 
   expect_named(result, c("merged", "thresholds", "unfiltered"))
   expect_true(data.table::is.data.table(result$merged))
@@ -15,7 +15,7 @@ test_that("prepare_filtered_cpg_table with chunk_by_chromosome=TRUE returns corr
   expect_true(data.table::is.data.table(result$unfiltered))
 })
 
-test_that("prepare_filtered_cpg_table chunked mode produces same results as non-chunked", {
+test_that("run_strand_filtering chunked mode produces same results as non-chunked", {
   bis <- data.table::data.table(
     chr = c("chr1", "chr1", "chr2", "chr2"),
     pos = c(1, 2, 100, 200),
@@ -35,8 +35,8 @@ test_that("prepare_filtered_cpg_table chunked mode produces same results as non-
   pipelines <- list(Bismark = bis, Bwameth = bwa)
 
   # Run both modes
-  result_normal <- prepare_filtered_cpg_table(pipelines, chunk_by_chromosome = FALSE)
-  result_chunked <- prepare_filtered_cpg_table(pipelines, chunk_by_chromosome = TRUE)
+  result_normal <- run_strand_filtering(pipelines, chunk_by_chromosome = FALSE)
+  result_chunked <- run_strand_filtering(pipelines, chunk_by_chromosome = TRUE)
 
   # Merged tables should have same number of rows and columns
   expect_equal(nrow(result_normal$merged), nrow(result_chunked$merged))
@@ -51,7 +51,7 @@ test_that("prepare_filtered_cpg_table chunked mode produces same results as non-
   expect_equal(names(result_normal$unfiltered), names(result_chunked$unfiltered))
 })
 
-test_that("prepare_filtered_cpg_table chunked mode handles multiple chromosomes", {
+test_that("run_strand_filtering chunked mode handles multiple chromosomes", {
   bis <- data.table::data.table(
     chr = c("chr1", "chr2", "chr3"),
     pos = c(1, 100, 1000),
@@ -60,7 +60,7 @@ test_that("prepare_filtered_cpg_table chunked mode handles multiple chromosomes"
     ML = c(0.5, 0.48, 0.5),
     strand = "+"
   )
-  result <- prepare_filtered_cpg_table(list(Bismark = bis), chunk_by_chromosome = TRUE)
+  result <- run_strand_filtering(list(Bismark = bis), chunk_by_chromosome = TRUE)
 
   # Should have produced a merged result and unfiltered data
   expect_true(nrow(result$merged) > 0)
@@ -68,7 +68,7 @@ test_that("prepare_filtered_cpg_table chunked mode handles multiple chromosomes"
   expect_true(nrow(result$thresholds) > 0)
 })
 
-test_that("prepare_filtered_cpg_table chunked mode produces output structure", {
+test_that("run_strand_filtering chunked mode produces output structure", {
   # Create data with mixed quality
   bis <- data.table::data.table(
     chr = c("chr1", "chr1", "chr1", "chr2", "chr2", "chr2"),
@@ -78,7 +78,7 @@ test_that("prepare_filtered_cpg_table chunked mode produces output structure", {
     ML = c(0.5, 0.5, 0, 0.48, 0.5, 0),
     strand = "+"
   )
-  result <- prepare_filtered_cpg_table(list(Bismark = bis), chunk_by_chromosome = TRUE)
+  result <- run_strand_filtering(list(Bismark = bis), chunk_by_chromosome = TRUE)
 
   # Should have consistent output structure
   expect_true(data.table::is.data.table(result$merged))

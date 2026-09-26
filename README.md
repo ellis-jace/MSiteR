@@ -1,6 +1,3 @@
-
-
-Readme updated · MD
 # MSiteR
  
 Tools for filtering, comparing, and merging CpG methylation calls across multiple alignment/calling pipelines (Bismark, BWA-meth, Biscuit, ENCODE), including strand-level read-depth thresholding, cross-pipeline consensus analysis, and comprehensive visualization.

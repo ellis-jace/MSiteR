@@ -173,6 +173,7 @@ test_that("n_methods is 1-4 or NA", {
   result_consensus <- run_consensus_filtering(result_strand)
 
   n_methods_vals <- result_consensus$unfiltered$n_methods
+
   expect_true(all(n_methods_vals %in% c(1, 2, 3, 4), na.rm = TRUE))
 })
 

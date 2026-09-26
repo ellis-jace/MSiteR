@@ -60,8 +60,8 @@ plot_consensus_distribution <- function(result,
   p <- ggplot2::ggplot(final_summary,
                        ggplot2::aes(x = median_Tread, y = frequency,
                                     color = dataset, fill = dataset)) +
-    ggplot2::geom_area(position = "identity", alpha = 0.15, size = 0.8) +
-    ggplot2::geom_line(size = 1) +
+    ggplot2::geom_area(position = "identity", alpha = 0.15, linewidth = 0.8) +
+    ggplot2::geom_line(linewidth = 1) +
     ggplot2::scale_x_continuous(breaks = seq(0, reads_max, by = 10)) +
     ggplot2::scale_y_continuous(labels = scales::comma) +
     ggplot2::scale_color_manual(values = pub_colors) +
