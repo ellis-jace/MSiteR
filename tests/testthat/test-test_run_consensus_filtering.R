@@ -1,5 +1,3 @@
-context("run_consensus_filtering()")
-
 # ============================================================================
 # SETUP: Create mock strand filtering output
 # ============================================================================
@@ -42,6 +40,11 @@ create_mock_strand_result <- function(n_sites = 1000) {
     merged[, (col) := as.integer(get(col))]
   }
 
+  # Remove any rows where all pipelines are NA (ensure every site has >= 1 detection)
+  merged <- merged[
+    !is.na(Bismark_TR) | !is.na(Bwameth_TR) | !is.na(Biscuit_TR) | !is.na(Encode_TR)
+  ]
+
   # Create strand thresholds (mock)
   strand_thresholds <- data.table::data.table(
     Pipeline = c("Bismark", "Bwameth", "Biscuit", "Encode"),
@@ -63,10 +66,10 @@ create_mock_strand_result <- function(n_sites = 1000) {
 # TESTS: Input validation
 # ============================================================================
 
-test_that("run_consensus_filtering rejects non-list input", {
+test_that("run_consensus_filtering rejects invalid input", {
   expect_error(
     run_consensus_filtering(data.frame()),
-    "result must be a list"
+    "result missing required components"
   )
 })
 

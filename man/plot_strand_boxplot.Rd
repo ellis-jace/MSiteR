@@ -7,7 +7,7 @@
 plot_strand_boxplot(result, outdir = NULL, sample_name = "sample")
 }
 \arguments{
-\item{result}{Output from \code{\link[=prepare_filtered_cpg_table]{prepare_filtered_cpg_table()}}}
+\item{result}{Output from \code{\link[=run_strand_filtering]{run_strand_filtering()}}}
 
 \item{outdir}{Optional directory to save PDF. If NULL, plot is not saved.}
 

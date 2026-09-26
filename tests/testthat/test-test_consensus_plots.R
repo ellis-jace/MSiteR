@@ -1,5 +1,3 @@
-context("Consensus plotting functions")
-
 # ============================================================================
 # SETUP: Create mock consensus filtering output
 # ============================================================================
@@ -161,7 +159,7 @@ test_that("plot_consensus_venn title changes with show_filtered", {
   title_unfiltered <- p_unfiltered$labels$title
   title_filtered <- p_filtered$labels$title
 
-  expect_not_equal(title_unfiltered, title_filtered)
+  expect_false(identical(title_unfiltered, title_filtered))
   expect_true(grepl("Before", title_unfiltered))
   expect_true(grepl("After", title_filtered))
 })
@@ -293,7 +291,7 @@ test_that("plot_consensus_boxplot title changes with show_filtered", {
   title_unfiltered <- p_unfiltered$labels$title
   title_filtered <- p_filtered$labels$title
 
-  expect_not_equal(title_unfiltered, title_filtered)
+  expect_false(identical(title_unfiltered, title_filtered))
   expect_true(grepl("Before", title_unfiltered))
   expect_true(grepl("After", title_filtered))
 })
@@ -388,12 +386,11 @@ test_that("upset plot returns invisible NULL when outdir provided", {
   result <- create_mock_consensus_result()
   tmpdir <- tempdir()
 
-  out <- capture.output({
-    result_obj <- plot_consensus_upset(result, outdir = tmpdir, sample_name = "test_invisible")
-  })
+  plot_consensus_upset(result, outdir = tmpdir, sample_name = "test_invisible")
 
-  # Should be invisible (no output except message)
-  expect_true(any(grepl("Saved", out)))
+  # Should have created the file
+  expected_file <- file.path(tmpdir, "test_invisible_Fig_UpSet_Consensus_unfiltered.pdf")
+  expect_true(file.exists(expected_file))
 
   # Cleanup
   file.remove(file.path(tmpdir, "test_invisible_Fig_UpSet_Consensus_unfiltered.pdf"))

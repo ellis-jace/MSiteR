@@ -26,9 +26,9 @@ calculate_consensus_thresholds <- function(dt) {
   })
   names(cutoffs_n1) <- tools
 
-  cutoffs_n2 <- pmax(5, pmin(10, ceiling(cutoffs_n1 / 2)))
-  cutoffs_n3 <- pmax(4, pmin(8,  ceiling(cutoffs_n1 / 3)))
-  cutoffs_n4 <- pmax(3, pmin(6,  ceiling(cutoffs_n1 / 4)))
+  cutoffs_n2 <- pmin(12, ceiling(cutoffs_n1 / 2))
+  cutoffs_n3 <- pmin(12, ceiling(cutoffs_n1 / 3))
+  cutoffs_n4 <- pmin(12, ceiling(cutoffs_n1 / 4))
 
   data.table::data.table(
     Tool = tools,

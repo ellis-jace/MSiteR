@@ -13,7 +13,7 @@ plot_strand_frequency_filtered(
 )
 }
 \arguments{
-\item{result}{Output from \code{\link[=prepare_filtered_cpg_table]{prepare_filtered_cpg_table()}}}
+\item{result}{Output from \code{\link[=run_strand_filtering]{run_strand_filtering()}}}
 
 \item{outdir}{Optional directory to save PDF. If NULL, plot is not saved.}
 

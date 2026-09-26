@@ -1,5 +1,3 @@
-context("Strand plotting functions (refactored)")
-
 # Setup: Create mock result object matching prepare_filtered_cpg_table() output
 create_mock_result <- function(n_unfiltered = 1000, n_filtered = 800) {
   # Create unfiltered (long-format) data
@@ -130,7 +128,7 @@ test_that("plot_strand_frequency_unfiltered subtitle changes with show_threshold
   subtitle_no_thresh <- p_no_thresh$labels$subtitle
   subtitle_with_thresh <- p_with_thresh$labels$subtitle
 
-  expect_not_equal(subtitle_no_thresh, subtitle_with_thresh)
+  expect_false(identical(subtitle_no_thresh, subtitle_with_thresh))
   expect_true(grepl("thresholds", subtitle_with_thresh, ignore.case = TRUE))
 })
 
@@ -235,7 +233,7 @@ test_that("plot_strand_frequency_filtered has different subtitle with thresholds
   subtitle_no_thresh <- p_no_thresh$labels$subtitle
   subtitle_with_thresh <- p_with_thresh$labels$subtitle
 
-  expect_not_equal(subtitle_no_thresh, subtitle_with_thresh)
+  expect_false(identical(subtitle_no_thresh, subtitle_with_thresh))
   expect_true(grepl("thresholds", subtitle_with_thresh, ignore.case = TRUE))
 })
 

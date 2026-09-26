@@ -12,9 +12,9 @@ test_that("tier 2/3/4 thresholds are derived from tier 1 with correct clamps", {
   result <- calculate_consensus_thresholds(dt)
 
   expect_equal(result$Threshold_1M, 40)
-  expect_equal(result$Threshold_2M, 10)  # ceiling(40/2)=20, clamped to max 10
-  expect_equal(result$Threshold_3M, 8)   # ceiling(40/3)=14, clamped to max 8
-  expect_equal(result$Threshold_4M, 6)   # ceiling(40/4)=10, clamped to max 6
+  expect_equal(result$Threshold_2M, 12)  # ceiling(40/2)=20, clamped to max 12
+  expect_equal(result$Threshold_3M, 12)  # ceiling(40/3)=14, clamped to max 12
+  expect_equal(result$Threshold_4M, 10)  # ceiling(40/4)=10
 })
 
 test_that("falls back to floor of 3 when no n_methods==1 sites exist", {

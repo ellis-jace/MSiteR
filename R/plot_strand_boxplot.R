@@ -3,7 +3,7 @@
 #' Shows read depth distribution for single-strand (S1) vs double-strand (S2)
 #' methylation sites across pipelines. Includes Wilcoxon test statistics.
 #'
-#' @param result Output from [prepare_filtered_cpg_table()]
+#' @param result Output from [run_strand_filtering()]
 #' @param outdir Optional directory to save PDF. If NULL, plot is not saved.
 #' @param sample_name Sample ID for filename (default "sample")
 #'

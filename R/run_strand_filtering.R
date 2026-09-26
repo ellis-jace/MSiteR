@@ -26,7 +26,7 @@
 #'   data.table), `thresholds` (the per-pipeline threshold table), and
 #'   `unfiltered` (the long-format pre-filter table, for plotting/QC).
 #' @export
-prepare_filtered_cpg_table <- function(pipelines,
+run_strand_filtering <- function(pipelines,
                                        strand_reference = NULL,
                                        strand_reference_for = "Biscuit",
                                        chunk_by_chromosome = FALSE) {

@@ -4,7 +4,7 @@
 #' sites BEFORE filtering thresholds are applied. Useful for deciding thresholds.
 #' Optionally display threshold cutoff lines to visualize filtering decisions.
 #'
-#' @param result Output from [prepare_filtered_cpg_table()]
+#' @param result Output from [run_strand_filtering()]
 #' @param outdir Optional directory to save PDF. If NULL, plot is not saved.
 #' @param sample_name Sample ID for filename (default "sample")
 #' @param reads_max Maximum read depth to display (default 75)

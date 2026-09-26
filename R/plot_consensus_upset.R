@@ -33,7 +33,7 @@ plot_consensus_upset <- function(result,
   )]
 
   plot_df <- as.data.frame(upset_dt)
-  setDT(plot_df)
+  data.table::setDT(plot_df)
   cols <- c("Bismark", "Bwameth", "Biscuit", "ENCODE")
 
   # Convert to integer (1/0) for UpSet
