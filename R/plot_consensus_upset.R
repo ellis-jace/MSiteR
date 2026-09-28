@@ -28,13 +28,15 @@ plot_consensus_upset <- function(result,
   tr_cols <- grep("_TR$", names(dt), value = TRUE)
   cols <- sub("_TR$", "", tr_cols)
 
-  # Create logical matrix and convert to integers
-  upset_list <- lapply(tr_cols, function(col) {
-    as.integer(!is.na(dt[[col]]))
-  })
-  names(upset_list) <- cols
+  # Sanitize names: remove hyphens
+  cols <- gsub("-", "", cols)  # "Bwa-meth" → "Bwameth"
 
-  plot_df <- as.data.frame(upset_list)
+  # Create data.frame
+  plot_df <- data.frame(row.names = 1:nrow(dt))
+
+  for (i in seq_along(cols)) {
+    plot_df[[cols[i]]] <- as.integer(!is.na(dt[[tr_cols[i]]]))
+  }
 
   # Color scheme for publication
   main_color <- "#285291"  # Solid deep blue
@@ -43,6 +45,13 @@ plot_consensus_upset <- function(result,
   # Generate UpSet plot
   pdf_file <- tempfile(fileext = ".pdf")
   pdf(pdf_file, width = 10, height = 7, onefile = FALSE)
+
+  print("Columns in plot_df:")
+  print(names(plot_df))
+  print("Cols being passed to sets:")
+  print(cols)
+  print("Do they match?")
+  print(all(cols %in% names(plot_df)))
 
   UpSetR::upset(plot_df,
                 sets = cols,
