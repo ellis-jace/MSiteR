@@ -24,17 +24,13 @@ plot_consensus_upset <- function(result,
   # Select data based on show_filtered
   dt <- if (show_filtered) result$merged else result$unfiltered
 
-  # Create logical matrix: TRUE if pipeline detected this site
-  upset_dt <- dt[, .(
-    Bismark = !is.na(Bismark_TR),
-    Bwameth = !is.na(Bwameth_TR),
-    Biscuit = !is.na(Biscuit_TR),
-    ENCODE = !is.na(Encode_TR)
-  )]
+  # Extract dynamically:
+  tr_cols <- grep("_TR$", names(dt), value = TRUE)
+  cols <- sub("_TR$", "", tr_cols)
 
-  plot_df <- as.data.frame(upset_dt)
-  data.table::setDT(plot_df)
-  cols <- c("Bismark", "Bwameth", "Biscuit", "ENCODE")
+  # Create logical matrix dynamically:
+  upset_dt <- dt[, lapply(.SD, function(x) !is.na(x)), .SDcols = tr_cols]
+  setnames(upset_dt, cols)
 
   # Convert to integer (1/0) for UpSet
   for (col in cols) {
