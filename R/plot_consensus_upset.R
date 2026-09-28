@@ -24,19 +24,17 @@ plot_consensus_upset <- function(result,
   # Select data based on show_filtered
   dt <- if (show_filtered) result$merged else result$unfiltered
 
-  # Extract dynamically:
+  # Extract dynamically
   tr_cols <- grep("_TR$", names(dt), value = TRUE)
   cols <- sub("_TR$", "", tr_cols)
 
-  # Create logical matrix dynamically:
-  upset_dt <- dt[, lapply(.SD, function(x) !is.na(x)), .SDcols = tr_cols]
-  setnames(upset_dt, cols)
+  # Create logical matrix and convert to integers
+  upset_list <- lapply(tr_cols, function(col) {
+    as.integer(!is.na(dt[[col]]))
+  })
+  names(upset_list) <- cols
 
-  # Convert to integer (1/0) for UpSet
-  plot_df <- as.data.frame(upset_dt)
-  for (col in cols) {
-    data.table::set(plot_df, j = col, value = as.integer(plot_df[[col]]))
-  }
+  plot_df <- as.data.frame(upset_list)
 
   # Color scheme for publication
   main_color <- "#285291"  # Solid deep blue
