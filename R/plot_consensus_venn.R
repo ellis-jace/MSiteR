@@ -65,7 +65,7 @@ plot_consensus_venn <- function(result,
     ggplot2::theme(
       plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", color = "black"),
       plot.background = ggplot2::element_rect(fill = "white", color = NA)) +
-    ggplot2::labs(title = paste0("Consensus of Methylation Sites Across 4 Pipelines", title_suffix))
+    ggplot2::labs(title = paste0("Consensus of Methylation Sites Across 4 Pipelines\n", title_suffix))
 
   # Save if outdir provided
   if (!is.null(outdir)) {
