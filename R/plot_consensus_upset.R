@@ -33,6 +33,7 @@ plot_consensus_upset <- function(result,
   setnames(upset_dt, cols)
 
   # Convert to integer (1/0) for UpSet
+  plot_df <- as.data.frame(upset_dt)
   for (col in cols) {
     data.table::set(plot_df, j = col, value = as.integer(plot_df[[col]]))
   }
