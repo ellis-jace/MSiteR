@@ -31,8 +31,11 @@ plot_consensus_upset <- function(result,
   # Sanitize names: remove hyphens
   cols <- gsub("-", "", cols)  # "Bwa-meth" → "Bwameth"
 
-  # Create data.frame
-  plot_df <- data.frame(row.names = 1:nrow(dt))
+  # Build all columns at once
+  plot_df <- data.frame(lapply(seq_along(tr_cols), function(i) {
+    as.integer(!is.na(dt[[tr_cols[i]]]))
+  }))
+  colnames(plot_df) <- cols
 
   for (i in seq_along(cols)) {
     plot_df[[cols[i]]] <- as.integer(!is.na(dt[[tr_cols[i]]]))
@@ -45,13 +48,6 @@ plot_consensus_upset <- function(result,
   # Generate UpSet plot
   pdf_file <- tempfile(fileext = ".pdf")
   pdf(pdf_file, width = 10, height = 7, onefile = FALSE)
-
-  print("Columns in plot_df:")
-  print(names(plot_df))
-  print("Cols being passed to sets:")
-  print(cols)
-  print("Do they match?")
-  print(all(cols %in% names(plot_df)))
 
   UpSetR::upset(plot_df,
                 sets = cols,

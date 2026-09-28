@@ -24,21 +24,23 @@ plot_consensus_venn <- function(result,
   # Select data based on show_filtered
   dt <- if (show_filtered) result$merged else result$unfiltered
 
-  # Create logical matrix
-  upset_dt <- dt[, .(
-    Bismark = !is.na(Bismark_TR),
-    Bwameth = !is.na(Bwameth_TR),
-    Biscuit = !is.na(Biscuit_TR),
-    ENCODE = !is.na(Encode_TR)
-  )]
+  # Extract dynamically
+  tr_cols <- grep("_TR$", names(dt), value = TRUE)
+  cols <- sub("_TR$", "", tr_cols)
+  cols <- gsub("-", "", cols)  # Sanitize hyphens
+
+  # Create logical matrix dynamically
+  upset_dt <- dt[, lapply(.SD, function(x) !is.na(x)), .SDcols = tr_cols]
+  setnames(upset_dt, cols)
 
   # Convert to list of indices for Venn diagram
-  venn_list <- list(
-    Bismark = which(upset_dt$Bismark == TRUE),
-    Bwameth = which(upset_dt$Bwameth == TRUE),
-    Biscuit = which(upset_dt$Biscuit == TRUE),
-    ENCODE = which(upset_dt$ENCODE == TRUE)
-  )
+  venn_list <- lapply(seq_along(cols), function(i) {
+    which(upset_dt[[cols[i]]] == TRUE)
+  })
+  names(venn_list) <- cols
+
+  # Build Venn diagram
+  title_suffix <- if (show_filtered) " (After Consensus Filtering)" else " (Before Consensus Filtering)"
 
   # Define colors
   venn_colors <- c("#D32F2F", "#1976D2", "#388E3C", "#7B1FA2")
@@ -48,7 +50,7 @@ plot_consensus_venn <- function(result,
 
   pvenn <- ggvenn::ggvenn(
     venn_list,
-    columns = c("Bismark", "Bwameth", "Biscuit", "ENCODE"),
+    columns = cols,
     fill_color = venn_colors,
     fill_alpha = 0.8,
     stroke_size = 0,
