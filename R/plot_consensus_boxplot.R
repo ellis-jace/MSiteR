@@ -41,7 +41,7 @@ plot_consensus_boxplot <- function(result,
     ggplot2::geom_boxplot(outlier.shape = NA,
                           width = 0.5,
                           color = "black",
-                          size = 0.6,
+                          linewidth = 0.6,
                           notch = TRUE) +
     ggplot2::scale_fill_manual(values = pub_colors) +
     ggplot2::coord_cartesian(ylim = c(0, 80)) +
@@ -49,7 +49,7 @@ plot_consensus_boxplot <- function(result,
     ggplot2::labs(
       x = "Consensus Tier (Pipelines Overlap)",
       y = "Median Read Depth",
-      title = paste0("Methylation Distribution by Consensus Tier", title_suffix)) +
+      title = paste0("Methylation Distribution by Consensus Tier\n", title_suffix)) +
     ggplot2::theme_bw() +
     ggplot2::theme(
       legend.position = "none",

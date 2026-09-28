@@ -69,7 +69,7 @@ plot_consensus_distribution <- function(result,
     ggplot2::labs(
       x = "Median Read Depth",
       y = "Number of Sites",
-      title = paste0("Methylation Signal Distribution by Consensus Tier", title_suffix),
+      title = paste0("Methylation Signal Distribution by Consensus Tier\n", title_suffix),
       color = "Consensus",
       fill = "Consensus") +
     ggplot2::theme_bw() +
