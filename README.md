@@ -27,6 +27,9 @@ The package covers **2 stages** of methylation-calling workflow: turning raw, pe
 raw pipeline files (+ optional strand reference)
         │
         ▼
+  make_cpg_table()          # if necessary, process reference genome data from .fna file
+        │
+        ▼
 chunk_by_chromosome()       # if necessary, separate chromosomes for individual pipeline calls
         │
         ▼
@@ -206,6 +209,7 @@ result_consensus$thresholds
  
 | Function | Purpose |
 |----------|---------|
+| `make_cpg_table()` | Extract CpG sites from FASTA reference file. |
 | `chunk_by_chromosome()` | Subset each pipeline's data.table to individual chromosomes. |
 | `collapse_cpg_strand()` | Collapse complementary +/- strand CpG calls into symmetric per-site totals. Joins strand from a reference file if absent (e.g., Biscuit). |
 | `prepare_unfiltered_dt()` | Reshape collapsed pipeline tables into long-format (`reads`, `Pipeline`, `Strand`) for thresholding and plotting. |
@@ -267,5 +271,6 @@ chr  pos  TRead  MRead  ML  [strand]
  
 ## Author
  
-Jace Ellis ([ellisjacem\@gmail.com](mailto:ellisjacem@gmail.com)), data science student, University of Missouri–Columbia. Developed for CpG methylation pipeline comparison work under the guidance of Shangqian Xie (<https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN>).
+Jace Ellis ([ellisjacem\@gmail.com](mailto:ellisjacem@gmail.com)), Data Science student, University of Missouri–Columbia. 
+Developed for CpG methylation pipeline comparison work under the guidance of Shangqian Xie (<https://scholar.google.com/citations?user=HZ8VFAsAAAAJ&hl=zh-CN>).
  
