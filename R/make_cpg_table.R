@@ -25,60 +25,21 @@
 #' head(cpg_table)
 #' }
 make_cpg_table <- function(fasta_file) {
-  # Read FASTA file
-  lines <- readLines(fasta_file)
+  genome <- Biostrings::readDNAStringSet(fasta_file)
+  # keep only the first token of the header as the chromosome ID
+  names(genome) <- sub("\\s.*$", "", names(genome))
 
-  # Find header lines (start with ">")
-  headers <- grep("^>", lines)
+  hits   <- Biostrings::vmatchPattern("CG", genome)
+  starts <- IRanges::start(hits)              # one integer vector per sequence
 
-  # Find where each chromosome's sequence ends
-  ends <- c(headers[-1] - 1, length(lines))
+  chr <- rep(names(genome), lengths(starts))
+  pos <- unlist(starts, use.names = FALSE)
 
-  # Process each chromosome
-  result <- lapply(seq_along(headers), function(i) {
-    # Extract chromosome ID from header (remove ">")
-    chr <- sub("^>", "", lines[headers[i]])
-
-    # Combine all sequence lines belonging to this chromosome
-    seq <- paste0(lines[(headers[i] + 1):ends[i]], collapse = "")
-    seq <- toupper(seq)
-
-    # Find all "CG" positions (forward strand)
-    cpg_forward <- gregexpr("CG", seq, fixed = TRUE)[[1]]
-
-    # Find all "GC" positions (reverse complement)
-    cpg_reverse <- gregexpr("GC", seq, fixed = TRUE)[[1]]
-
-    # Combine results
-    cpg_list <- list()
-
-    if (cpg_forward[1] != -1) {
-      cpg_list[[1]] <- data.frame(
-        chr = chr,
-        CpG_pos = cpg_forward,
-        strand = "+",
-        stringsAsFactors = FALSE
-      )
-    }
-
-    if (cpg_reverse[1] != -1) {
-      cpg_list[[2]] <- data.frame(
-        chr = chr,
-        CpG_pos = cpg_reverse,
-        strand = "-",
-        stringsAsFactors = FALSE
-      )
-    }
-
-    if (length(cpg_list) == 0) {
-      return(NULL)
-    }
-
-    do.call(rbind, cpg_list)
-  })
-
-  # Combine all chromosomes and sort by position
-  result_df <- do.call(rbind, result)
-  rownames(result_df) <- NULL
-  result_df[order(result_df$chr, result_df$CpG_pos), ]
+  out <- data.table::data.table(
+    chr     = c(chr, chr),
+    CpG_pos = c(pos, pos + 1L),
+    strand  = rep(c("+", "-"), each = length(pos)),
+    stringsAsFactors = FALSE
+  )
+  out[order(out$chr, out$CpG_pos), ]
 }
