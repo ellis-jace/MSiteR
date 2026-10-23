@@ -21,8 +21,8 @@ run_pipeline_on_chunk <- function(chr_pipelines,
                                   strand_reference = NULL,
                                   strand_reference_for = 'Biscuit') {
   chr_collapsed <- Map(function(x, name) {
-    ref <- if (name %in% strand_reference_for) strand_reference else NULL
-    collapse_cpg_strand(x, strand_reference = ref)
+    #ref <- if (name %in% strand_reference_for) strand_reference else NULL
+    collapse_cpg_strand(x, strand_reference = strand_reference)
   }, chr_pipelines, names(chr_pipelines))
 
   chr_unfiltered <- prepare_unfiltered_dt(chr_collapsed)
