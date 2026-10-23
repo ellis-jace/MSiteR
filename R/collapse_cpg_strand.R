@@ -24,14 +24,8 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
     data.table::copy(input)
   }
 
-  # Determine whether strand is present:
-  # - file input: 6 raw columns means strand is present as the 6th; 5 means it's missing
-  # - data.table input: check the actual column name
-  has_strand <- if (is.character(input)) {
-    ncol(dt) == 6
-  } else {
-    "strand" %in% names(dt)
-  }
+  # Strand is present if there are 6 columns (positional) or a column named "strand"
+  has_strand <- ncol(dt) == 6L || "strand" %in% names(dt)
 
   if (!has_strand) {
     if (is.null(strand_reference)) {
@@ -43,7 +37,9 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
     } else {
       data.table::copy(strand_reference)
     }
+    ref <- ref[, .(chr, CpG_pos, strand)]
     dt <- ref[dt, on = .(chr, CpG_pos = pos)]
+    dt <- dt[!is.na(strand)]
     data.table::setnames(dt, c("chr", "pos", "strand", "TRead", "MRead", "ML"))
   } else {
     data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML", "strand"))
