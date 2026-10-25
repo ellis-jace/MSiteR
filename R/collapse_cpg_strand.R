@@ -1,64 +1,50 @@
 #' Collapse +/- strand CpG calls into symmetric per-site totals
 #'
-#' Reads a single pipeline's raw per-strand methylation calls and collapses
-#' complementary +/- strand rows for the same CpG dinucleotide into one
-#' symmetric site, summing read counts and recomputing methylation level.
-#' If the input lacks a `strand` column (e.g. Biscuit output), strand is
-#' joined in from an external reference table.
+#' Collapses complementary +/- strand rows for the same CpG into one site,
+#' summing read counts and recomputing methylation level. Input must already
+#' have standard column names (see [read_pipeline_files()]). If `input` has no
+#' `strand` column (e.g. Biscuit output), strand is joined in from
+#' `strand_reference`.
 #'
-#' @param input Either a file path (character) to a tab-delimited file with
-#'   columns `chr, pos, TRead, MRead, ML[, strand]` (no header), or an
-#'   already-loaded data.table with those columns.
-#' @param strand_reference Optional file path or data.table providing
-#'   `chr, CpG_pos, strand` when `input` doesn't already contain a `strand`
-#'   column (required for Biscuit-style input).
+#' @param input A data.table with columns `chr, pos, TRead, MRead, ML`, and
+#'   optionally `strand`.
+#' @param strand_reference Optional data.table with columns `chr`, `CpG_pos`,
+#'   and `strand` (e.g. from [make_cpg_table()]). Required when `input` has no
+#'   `strand` column.
 #'
 #' @return A data.table with columns `chr, pos, TRead, MRead, ML, n`, one
-#'   row per symmetric CpG site.
+#'   row per symmetric CpG site. `pos` is the CpG's C position.
 #' @export
-#'
 collapse_cpg_strand <- function(input, strand_reference = NULL) {
+  dt <- data.table::copy(data.table::as.data.table(input))
 
-  # Strand is present if there are 6 columns (positional) or a column named "strand"
-  has_strand <- ncol(dt) == 6L || "strand" %in% names(dt)
-
-  if (!has_strand) {
+  if (!"strand" %in% names(dt)) {
     if (is.null(strand_reference)) {
       stop("`input` has no `strand` column and no `strand_reference` was provided.")
     }
-    data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML"))
 
-    ref <- if (is.character(strand_reference)) {
-      data.table::fread(strand_reference)
-    } else {
-      data.table::copy(strand_reference)
+    ref <- data.table::as.data.table(strand_reference)
+    missing_cols <- setdiff(c("chr", "CpG_pos", "strand"), names(ref))
+    if (length(missing_cols) > 0) {
+      stop("`strand_reference` is missing column(s): ",
+           paste(missing_cols, collapse = ", "))
     }
+    ref <- ref[, .(chr, CpG_pos, strand)]
 
-    # Case-insensitive column matching
-    data.table::setnames(ref, tolower(names(ref)))
-    needed <- c("chr", "cpg_pos", "strand")
-    miss <- setdiff(needed, names(ref))
-    if (length(miss)) {
-      stop("`strand_reference` is missing column(s): ", paste(miss, collapse = ", "),
-           ". It has: ", paste(names(ref), collapse = ", "))
-    }
-    ref <- ref[, .(chr = chr, CpG_pos = cpg_pos, strand = strand)]
-
-    dt <- ref[dt, on = .(chr, CpG_pos = pos)]
-    dt <- dt[!is.na(strand)]
-    data.table::setnames(dt, c("chr", "pos", "strand", "TRead", "MRead", "ML"))
-  } else {
-    data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML", "strand"))
+    # Join on the call's position. Calls with no reference match are dropped.
+    dt[, CpG_pos := pos]
+    dt <- ref[dt, on = .(chr, CpG_pos), nomatch = NULL]
   }
 
-  dt[, CpG_pos := ifelse(strand == "-", pos - 1, pos)]
-  merged <- dt[, {
-    if (.N == 2 && all(c("+", "-") %in% strand)) {
-      list(pos = pos[strand == "+"][1], TRead = sum(TRead), MRead = sum(MRead), n = .N)
-    } else {
-      list(pos = pos[1], TRead = sum(TRead), MRead = sum(MRead), n = .N)
-    }
-  }, by = .(chr, CpG_pos)]
+  # Map reverse-strand calls (at the G) back to the CpG's C position
+  dt[, CpG_pos := ifelse(strand == "-", pos - 1L, pos)]
+
+  merged <- dt[, .(
+    pos    = CpG_pos[1],
+    TRead  = sum(TRead),
+    MRead  = sum(MRead),
+    n      = .N
+  ), by = .(chr, CpG_pos)]
 
   merged[, ML := MRead / TRead]
   data.table::setorder(merged, chr, pos)
