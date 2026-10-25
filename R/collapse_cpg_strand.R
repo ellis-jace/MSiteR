@@ -18,11 +18,6 @@
 #' @export
 #'
 collapse_cpg_strand <- function(input, strand_reference = NULL) {
-  dt <- if (is.character(input)) {
-    data.table::fread(input, header = FALSE)
-  } else {
-    data.table::copy(input)
-  }
 
   # Strand is present if there are 6 columns (positional) or a column named "strand"
   has_strand <- ncol(dt) == 6L || "strand" %in% names(dt)

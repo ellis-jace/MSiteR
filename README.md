@@ -27,6 +27,9 @@ The package covers **2 stages** of methylation-calling workflow: turning raw, pe
 raw pipeline files (+ optional strand reference)
         │
         ▼
+read_pipeline_files()       # read paths with fread, standardize column names
+        │
+        ▼
   make_cpg_table()          # if necessary, process reference genome data from .fna file
         │
         ▼

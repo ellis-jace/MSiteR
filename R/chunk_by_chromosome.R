@@ -11,11 +11,6 @@
 #'   pipelines for that chromosome.
 #' @export
 chunk_by_chromosome <- function(pipelines) {
-  # Read file paths into data.tables
-  read_if_path <- function(x) {
-    if (is.character(x)) data.table::fread(x) else x
-  }
-  all_data <- lapply(pipelines, read_if_path)
 
   # Extract unique chromosomes and sort
   chromosomes <- sort(unique(do.call(c, lapply(all_data, function(x) x$chr))))

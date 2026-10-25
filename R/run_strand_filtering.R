@@ -31,6 +31,12 @@ run_strand_filtering <- function(pipelines,
                                        strand_reference_for = "Biscuit",
                                        chunk_by_chromosome = FALSE) {
 
+  # Only standardize if something in the list is not already a data.table
+  all_tables <- all(vapply(pipelines, data.table::is.data.table, logical(1)))
+  if (!all_tables) {
+    pipelines <- read_pipeline_files(pipelines)
+  }
+
   if (!chunk_by_chromosome) {
     # Original behavior: process full dataset in one pass
     result <- run_pipeline_on_chunk(pipelines,
