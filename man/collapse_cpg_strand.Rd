@@ -7,22 +7,21 @@
 collapse_cpg_strand(input, strand_reference = NULL)
 }
 \arguments{
-\item{input}{Either a file path (character) to a tab-delimited file with
-columns \verb{chr, pos, TRead, MRead, ML[, strand]} (no header), or an
-already-loaded data.table with those columns.}
+\item{input}{A data.table with columns \verb{chr, pos, TRead, MRead, ML}, and
+optionally \code{strand}.}
 
-\item{strand_reference}{Optional file path or data.table providing
-\verb{chr, CpG_pos, strand} when \code{input} doesn't already contain a \code{strand}
-column (required for Biscuit-style input).}
+\item{strand_reference}{Optional. A genome FASTA path, a table file path,
+or a data.frame/data.table with columns \code{chr}, \code{CpG_pos}, and \code{strand}.
+Required when \code{input} has no \code{strand} column.}
 }
 \value{
 A data.table with columns \verb{chr, pos, TRead, MRead, ML, n}, one
-row per symmetric CpG site.
+row per symmetric CpG site. \code{pos} is the CpG's C position.
 }
 \description{
-Reads a single pipeline's raw per-strand methylation calls and collapses
-complementary +/- strand rows for the same CpG dinucleotide into one
-symmetric site, summing read counts and recomputing methylation level.
-If the input lacks a \code{strand} column (e.g. Biscuit output), strand is
-joined in from an external reference table.
+Collapses complementary +/- strand rows for the same CpG into one site,
+summing read counts and recomputing methylation level. Input must already
+have standard column names (see \code{\link[=read_pipeline_files]{read_pipeline_files()}}). If \code{input} has no
+\code{strand} column (e.g. Biscuit output), strand is joined in from
+\code{strand_reference}.
 }
