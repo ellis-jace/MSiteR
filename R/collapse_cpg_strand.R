@@ -32,12 +32,23 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
       stop("`input` has no `strand` column and no `strand_reference` was provided.")
     }
     data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML"))
+
     ref <- if (is.character(strand_reference)) {
       data.table::fread(strand_reference)
     } else {
       data.table::copy(strand_reference)
     }
-    ref <- ref[, .(chr, CpG_pos, strand)]
+
+    # Case-insensitive column matching
+    data.table::setnames(ref, tolower(names(ref)))
+    needed <- c("chr", "cpg_pos", "strand")
+    miss <- setdiff(needed, names(ref))
+    if (length(miss)) {
+      stop("`strand_reference` is missing column(s): ", paste(miss, collapse = ", "),
+           ". It has: ", paste(names(ref), collapse = ", "))
+    }
+    ref <- ref[, .(chr = chr, CpG_pos = cpg_pos, strand = strand)]
+
     dt <- ref[dt, on = .(chr, CpG_pos = pos)]
     dt <- dt[!is.na(strand)]
     data.table::setnames(dt, c("chr", "pos", "strand", "TRead", "MRead", "ML"))

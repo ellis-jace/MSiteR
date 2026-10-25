@@ -18,13 +18,13 @@ Encoding: UTF-8
 LazyData: true
 Suggests: 
     testthat (>= 3.0.0),
-    Biostrings
+    Biostrings,
+    ggpubr
 Config/testthat/edition: 3
 Imports: 
     data.table,
     dplyr,
     ggplot2,
-    ggpubr,
     ggvenn,
     matrixStats,
     scales,
