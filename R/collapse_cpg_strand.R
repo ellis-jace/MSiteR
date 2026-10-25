@@ -8,9 +8,9 @@
 #'
 #' @param input A data.table with columns `chr, pos, TRead, MRead, ML`, and
 #'   optionally `strand`.
-#' @param strand_reference Optional data.table with columns `chr`, `CpG_pos`,
-#'   and `strand` (e.g. from [make_cpg_table()]). Required when `input` has no
-#'   `strand` column.
+#' @param strand_reference Optional. A genome FASTA path, a table file path,
+#'   or a data.frame/data.table with columns `chr`, `CpG_pos`, and `strand`.
+#'   Required when `input` has no `strand` column.
 #'
 #' @return A data.table with columns `chr, pos, TRead, MRead, ML, n`, one
 #'   row per symmetric CpG site. `pos` is the CpG's C position.
@@ -23,13 +23,7 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
       stop("`input` has no `strand` column and no `strand_reference` was provided.")
     }
 
-    ref <- data.table::as.data.table(strand_reference)
-    missing_cols <- setdiff(c("chr", "CpG_pos", "strand"), names(ref))
-    if (length(missing_cols) > 0) {
-      stop("`strand_reference` is missing column(s): ",
-           paste(missing_cols, collapse = ", "))
-    }
-    ref <- ref[, .(chr, CpG_pos, strand)]
+    ref <- resolve_strand_reference(strand_reference)
 
     # Join on the call's position. Calls with no reference match are dropped.
     dt[, CpG_pos := pos]
@@ -40,10 +34,10 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
   dt[, CpG_pos := ifelse(strand == "-", pos - 1L, pos)]
 
   merged <- dt[, .(
-    pos    = CpG_pos[1],
-    TRead  = sum(TRead),
-    MRead  = sum(MRead),
-    n      = .N
+    pos   = CpG_pos[1],
+    TRead = sum(TRead),
+    MRead = sum(MRead),
+    n     = .N
   ), by = .(chr, CpG_pos)]
 
   merged[, ML := MRead / TRead]

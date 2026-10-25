@@ -37,6 +37,11 @@ run_strand_filtering <- function(pipelines,
     pipelines <- read_pipeline_files(pipelines)
   }
 
+  # Parse the reference once. A table passes through unchanged.
+  if (!is.null(strand_reference)) {
+    strand_reference <- resolve_strand_reference(strand_reference)
+  }
+
   if (!chunk_by_chromosome) {
     # Original behavior: process full dataset in one pass
     result <- run_pipeline_on_chunk(pipelines,
