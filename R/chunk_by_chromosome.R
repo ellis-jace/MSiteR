@@ -13,11 +13,11 @@
 chunk_by_chromosome <- function(pipelines) {
 
   # Extract unique chromosomes and sort
-  chromosomes <- sort(unique(do.call(c, lapply(all_data, function(x) x$chr))))
+  chromosomes <- sort(unique(do.call(c, lapply(pipelines, function(x) x$chr))))
 
   # Subset each pipeline to each chromosome
   chunks <- lapply(setNames(chromosomes, chromosomes), function(chr_name) {
-    lapply(all_data, function(x) x[x$chr == chr_name, ])
+    lapply(pipelines, function(x) x[x$chr == chr_name, ])
   })
 
   chunks
