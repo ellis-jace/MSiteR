@@ -8,7 +8,8 @@
 #'   data.frame/data.table.
 #'
 #' @return A data.table with columns `chr`, `CpG_pos`, `strand`.
-#' @keywords internal
+#'
+#' @export
 resolve_strand_reference <- function(strand_reference) {
   required <- c("chr", "CpG_pos", "strand")
 
