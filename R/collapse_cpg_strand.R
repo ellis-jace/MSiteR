@@ -1,20 +1,3 @@
-#' Collapse +/- strand CpG calls into symmetric per-site totals
-#'
-#' Collapses complementary +/- strand rows for the same CpG into one site,
-#' summing read counts and recomputing methylation level. Input must already
-#' have standard column names (see [read_pipeline_files()]). If `input` has no
-#' `strand` column (e.g. Biscuit output), strand is joined in from
-#' `strand_reference`.
-#'
-#' @param input A data.table with columns `chr, pos, TRead, MRead, ML`, and
-#'   optionally `strand`.
-#' @param strand_reference Optional. A genome FASTA path, a table file path,
-#'   or a data.frame/data.table with columns `chr`, `CpG_pos`, and `strand`.
-#'   Required when `input` has no `strand` column.
-#'
-#' @return A data.table with columns `chr, pos, TRead, MRead, ML, n`, one
-#'   row per symmetric CpG site. `pos` is the CpG's C position.
-#' @export
 collapse_cpg_strand <- function(input, strand_reference = NULL) {
   dt <- data.table::copy(data.table::as.data.table(input))
 
@@ -30,8 +13,21 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
     dt <- ref[dt, on = .(chr, CpG_pos), nomatch = NULL]
   }
 
-  # Map reverse-strand calls (at the G) back to the CpG's C position
-  dt[, CpG_pos := ifelse(strand == "-", pos - 1L, pos)]
+  # Empty input: return a typed empty table so downstream merges still work
+  if (nrow(dt) == 0) {
+    return(data.table::data.table(
+      chr   = character(),
+      pos   = integer(),
+      TRead = integer(),
+      MRead = integer(),
+      ML    = numeric(),
+      n     = integer()
+    ))
+  }
+
+  # Map reverse-strand calls (at the G) back to the CpG's C position.
+  # fifelse() keeps the integer type; ifelse() can change it.
+  dt[, CpG_pos := data.table::fifelse(strand == "-", as.integer(pos) - 1L, as.integer(pos))]
 
   merged <- dt[, .(
     pos   = CpG_pos[1],
