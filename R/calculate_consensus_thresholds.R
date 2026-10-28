@@ -20,7 +20,9 @@ calculate_consensus_thresholds <- function(dt) {
   dt_n1 <- dt[n_methods == 1]
   cutoffs_n1 <- sapply(read_cols, function(col) {
     vals <- dt_n1[[col]]
-    vals <- vals[!is.na(vals)]
+    # A zero-depth row is not a call from this pipeline, even if another
+    # pipeline called the site. Do not let those zeros bias its 95th percentile.
+    vals <- vals[is.finite(vals) & vals > 0]
     if (length(vals) == 0) return(3)
     max(quantile(vals, 0.95, na.rm = TRUE), 3)
   })

@@ -8,8 +8,16 @@
 #'   `<name>_TR`, `<name>_MR`, `<name>_ML`, `<name>_StrN` columns.
 #' @export
 merge_filtered_pipelines <- function(filtered) {
+  if (!is.list(filtered) || !length(filtered) || is.null(names(filtered)) ||
+      anyNA(names(filtered)) || any(!nzchar(names(filtered))) ||
+      anyDuplicated(names(filtered))) {
+    stop("`filtered` must be a nonempty list with unique pipeline names.")
+  }
   renamed <- Map(function(dt, name) {
     dt <- data.table::copy(dt)
+    if (anyDuplicated(dt, by = c("chr", "pos"))) {
+      stop("Pipeline '", name, "' contains duplicate chr/pos keys.")
+    }
     data.table::setnames(dt, c("TRead", "MRead", "ML", "n"),
                          paste0(name, c("_TR", "_MR", "_ML", "_StrN")))
     dt

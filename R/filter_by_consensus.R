@@ -12,28 +12,35 @@
 filter_by_consensus <- function(dt, thresholds) {
   read_cols <- grep("_TR$", names(dt), value = TRUE)
   tools <- sub("_TR$", "", read_cols)
-
-  dt <- data.table::copy(dt)
-  dt[, n_methods := as.integer(n_methods)]
-
-  kept <- list()
-  remaining <- dt
-
-  for (k in 1:4) {
-    col <- paste0("Threshold_", k, "M")
-    group <- remaining[n_methods == k]
-
-    if (nrow(group) > 0) {
-      keep <- Reduce(`|`, lapply(tools, function(t) {
-        tr_col <- paste0(t, "_TR")
-        cutoff <- thresholds[Tool == t, get(col)]
-        !is.na(group[[tr_col]]) & group[[tr_col]] >= cutoff
-      }))
-      kept[[k]] <- group[keep]
-    }
-
-    remaining <- remaining[n_methods != k]
+  if (!length(read_cols) || !"n_methods" %in% names(dt)) {
+    stop("`dt` needs `n_methods` and pipeline `_TR` columns.")
+  }
+  if (length(tools) > 4L) {
+    stop("Consensus thresholding currently supports at most four pipelines.")
+  }
+  needed <- paste0("Threshold_", 1:4, "M")
+  if (!all(c("Tool", needed) %in% names(thresholds)) ||
+      anyDuplicated(thresholds$Tool) || !all(tools %in% thresholds$Tool)) {
+    stop("`thresholds` must contain one complete row for every pipeline.")
+  }
+  if (anyNA(thresholds[, ..needed])) {
+    stop("Consensus thresholds cannot contain missing cutoffs.")
+  }
+  if (anyNA(dt$n_methods) || any(dt$n_methods < 0 | dt$n_methods > length(tools))) {
+    stop("Invalid `n_methods` values.")
   }
 
-  data.table::rbindlist(kept)
+  # Apply all thresholds to one logical mask; avoid four successive table copies.
+  keep <- rep(FALSE, nrow(dt))
+  cutoffs <- thresholds[match(tools, thresholds$Tool)]
+  for (k in seq_along(tools)) {
+    rows <- which(dt$n_methods == k)
+    if (!length(rows)) next
+    cutoff <- cutoffs[[paste0("Threshold_", k, "M")]]
+    for (j in seq_along(read_cols)) {
+      values <- dt[[read_cols[j]]][rows]
+      keep[rows] <- keep[rows] | (!is.na(values) & values >= cutoff[j])
+    }
+  }
+  dt[keep]
 }

@@ -12,6 +12,8 @@
 #' @export
 chunk_by_chromosome <- function(pipelines) {
 
+  pipelines <- read_pipeline_files(pipelines)
+
   # Extract unique chromosomes and sort
   chromosomes <- sort(unique(do.call(c, lapply(pipelines, function(x) x$chr))))
 

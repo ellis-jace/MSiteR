@@ -25,6 +25,11 @@
 #' head(cpg_table)
 #' }
 make_cpg_table <- function(fasta_file) {
+  if (!requireNamespace("Biostrings", quietly = TRUE) ||
+      !requireNamespace("IRanges", quietly = TRUE)) {
+    stop("FASTA processing requires the optional Biostrings and IRanges packages. ",
+         "Install them with BiocManager::install(c('Biostrings', 'IRanges')).")
+  }
   genome <- Biostrings::readDNAStringSet(fasta_file)
   # keep only the first token of the header as the chromosome ID
   names(genome) <- sub("\\s.*$", "", names(genome))

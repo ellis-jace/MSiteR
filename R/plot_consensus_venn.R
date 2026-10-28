@@ -30,8 +30,8 @@ plot_consensus_venn <- function(result,
   cols <- gsub("-", "", cols)  # Sanitize hyphens
 
   # Create logical matrix dynamically
-  upset_dt <- dt[, lapply(.SD, function(x) !is.na(x)), .SDcols = tr_cols]
-  setnames(upset_dt, cols)
+  upset_dt <- dt[, lapply(.SD, function(x) !is.na(x) & x > 0), .SDcols = tr_cols]
+  data.table::setnames(upset_dt, cols)
 
   # Convert to list of indices for Venn diagram
   venn_list <- lapply(seq_along(cols), function(i) {
@@ -44,9 +44,6 @@ plot_consensus_venn <- function(result,
 
   # Define colors
   venn_colors <- c("#D32F2F", "#1976D2", "#388E3C", "#7B1FA2")
-
-  # Build Venn diagram
-  title_suffix <- if (show_filtered) " (After Consensus Filtering)" else " (Before Consensus Filtering)"
 
   pvenn <- ggvenn::ggvenn(
     venn_list,

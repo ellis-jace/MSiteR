@@ -11,11 +11,22 @@
 #'   `quantile80`, `cutoff1` (S1 threshold), `cutoff2` (S2 threshold).
 #' @export
 calculate_strand_thresholds <- function(dt) {
-  s1_data <- dt[Strand == "S1"]
-  s1_data[, .(
-    median_val = as.numeric(median(reads)),
-    quantile80 = as.numeric(quantile(reads, 0.8)),
-    cutoff1 = min(12, max(5, quantile(reads, 0.8))),
-    cutoff2 = ceiling(min(12, max(5, quantile(reads, 0.8))) / 2)
-  ), by = Pipeline][order(Pipeline)]
+  required <- c("Pipeline", "Strand", "reads")
+  if (!all(required %in% names(dt))) {
+    stop("`dt` must contain: ", paste(required, collapse = ", "))
+  }
+  if (nrow(dt) == 0L) stop("Cannot calculate thresholds from empty data.")
+
+  # Include pipelines with no S1 calls. In that case use the documented
+  # minimum S1 cutoff of 5 (and therefore S2 cutoff of 3).
+  dt[, {
+    values <- reads[Strand == "S1" & is.finite(reads)]
+    median_val <- if (length(values)) median(values) else NA_real_
+    quantile80 <- if (length(values)) {
+      as.numeric(stats::quantile(values, 0.8, names = FALSE))
+    } else NA_real_
+    cutoff1 <- if (length(values)) min(12, max(5, quantile80)) else 5
+    .(median_val = median_val, quantile80 = quantile80,
+      cutoff1 = cutoff1, cutoff2 = ceiling(cutoff1 / 2))
+  }, by = Pipeline][order(Pipeline)]
 }

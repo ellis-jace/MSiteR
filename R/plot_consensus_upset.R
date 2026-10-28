@@ -33,13 +33,9 @@ plot_consensus_upset <- function(result,
 
   # Build all columns at once
   plot_df <- data.frame(lapply(seq_along(tr_cols), function(i) {
-    as.integer(!is.na(dt[[tr_cols[i]]]))
+    as.integer(!is.na(dt[[tr_cols[i]]]) & dt[[tr_cols[i]]] > 0)
   }))
   colnames(plot_df) <- cols
-
-  for (i in seq_along(cols)) {
-    plot_df[[cols[i]]] <- as.integer(!is.na(dt[[tr_cols[i]]]))
-  }
 
   # Color scheme for publication
   main_color <- "#285291"  # Solid deep blue

@@ -15,7 +15,13 @@
 #' @return The filtered data.table.
 #' @export
 filter_by_strand <- function(dt, pipeline_name, thresholds, reads_col = "TRead") {
-  cutoff1 <- thresholds[Pipeline == pipeline_name, cutoff1]
-  cutoff2 <- thresholds[Pipeline == pipeline_name, cutoff2]
-  dt[n == 2 & get(reads_col) >= cutoff2 | (n == 1 & get(reads_col) >= cutoff1)]
+  row <- thresholds[Pipeline == pipeline_name]
+  if (nrow(row) != 1L || anyNA(row[, .(cutoff1, cutoff2)])) {
+    stop("Expected exactly one valid strand-threshold row for '", pipeline_name, "'.")
+  }
+  if (!all(c("n", reads_col) %in% names(dt))) {
+    stop("`dt` must contain `n` and `", reads_col, "`.")
+  }
+  dt[(n == 2L & get(reads_col) >= row$cutoff2) |
+       (n == 1L & get(reads_col) >= row$cutoff1)]
 }
