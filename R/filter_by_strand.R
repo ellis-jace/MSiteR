@@ -16,6 +16,9 @@
 #' @export
 filter_by_strand <- function(dt, pipeline_name, thresholds, reads_col = "TRead") {
   row <- thresholds[Pipeline == pipeline_name]
+  if (nrow(dt) == 0L) {
+    return(dt)
+  }
   if (nrow(row) != 1L || anyNA(row[, .(cutoff1, cutoff2)])) {
     stop("Expected exactly one valid strand-threshold row for '", pipeline_name, "'.")
   }

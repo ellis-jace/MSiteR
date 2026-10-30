@@ -34,9 +34,27 @@ run_strand_filtering <- function(pipelines,
   # Validate and normalize consistently, including already-loaded data.tables.
   pipelines <- read_pipeline_files(pipelines)
 
-  # Parse the reference once. A table passes through unchanged.
   if (!is.null(strand_reference)) {
     strand_reference <- resolve_strand_reference(strand_reference)
+
+    # Check chromosome compatibility before processing
+    ref_chr <- unique(as.character(strand_reference$chr))
+
+    for (name in intersect(strand_reference_for, names(pipelines))) {
+      pipeline_chr <- unique(as.character(pipelines[[name]]$chr))
+
+      if (length(pipeline_chr) > 0 &&
+          !any(pipeline_chr %in% ref_chr)) {
+
+        stop(
+          "No matching chromosome identifiers for ", name, ".\n",
+          "Pipeline example: ", pipeline_chr[1], "\n",
+          "Reference example: ", ref_chr[1], "\n",
+          "Check that the reference uses the correct genome assembly ",
+          "and chromosome identifiers."
+        )
+      }
+    }
   }
 
   if (!chunk_by_chromosome) {

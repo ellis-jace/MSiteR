@@ -66,8 +66,16 @@ collapse_cpg_strand <- function(input, strand_reference = NULL) {
     before <- nrow(dt)
     dt[, CpG_pos := pos]
     dt <- ref[dt, on = .(chr, CpG_pos), nomatch = NULL]
+    if (nrow(dt) == 0L && before > 0L) {
+      stop(
+        "No CpG positions matched the strand reference. ",
+        "Check that chromosome identifiers and genomic coordinates agree."
+      )
+    }
+
     if (nrow(dt) < before) {
-      warning(before - nrow(dt), " CpG calls had no strand-reference match and were dropped.")
+      warning(before - nrow(dt),
+              " CpG calls had no strand-reference match and were dropped.")
     }
   }
 
