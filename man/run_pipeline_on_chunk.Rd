@@ -7,7 +7,9 @@
 run_pipeline_on_chunk(
   chr_pipelines,
   strand_reference = NULL,
-  strand_reference_for = "Biscuit"
+  strand_reference_for = "Biscuit",
+  thresholds = NULL,
+  unfiltered_only = FALSE
 )
 }
 \arguments{
@@ -20,6 +22,12 @@ pipelines whose raw files lack a \code{strand} column, matched against
 
 \item{strand_reference_for}{Character vector of pipeline names needing
 \code{strand_reference} (default \code{"Biscuit"}).}
+
+\item{thresholds}{Optional global strand thresholds. If NULL, calculate
+thresholds from this chunk (the original behavior).}
+
+\item{unfiltered_only}{If TRUE, return only the pre-filter long table. This
+supports the first pass of chromosome-wise processing.}
 }
 \value{
 A list with \code{merged} (the merged, strand-filtered

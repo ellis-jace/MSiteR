@@ -17,7 +17,6 @@
 #'   - `thresholds`: Data.table with per-tool, per-tier (1M/2M/3M/4M) thresholds
 #'   - `filtering_stats`: Data.table with overall before/after counts and retention %
 #'
-#' @export
 #'
 #' @examples
 #' \dontrun{
@@ -39,6 +38,7 @@
 #' stats <- result_consensus$filtering_stats
 #' thresholds <- result_consensus$thresholds
 #' }
+#' @export
 run_consensus_filtering <- function(result) {
 
   # Validate Input
@@ -65,8 +65,7 @@ run_consensus_filtering <- function(result) {
 
   # STEP 1: Extract merged table and add consensus metrics
   message("Adding consensus metrics...")
-  dt <- data.table::copy(result$merged)
-  dt <- calculate_consensus_stats(dt)
+  dt <- calculate_consensus_stats(result$merged)
 
   # Validate that n_methods was added
   if (!("n_methods" %in% names(dt))) {
@@ -113,7 +112,7 @@ run_consensus_filtering <- function(result) {
   message("  Methylation sites after: ", n_after)
   message("  Methylation sites (1M) before: ", n_1m_before)
   message("  Methylation sites (1M) after: ", n_1m_after)
-  message("  Retain rate (1M): ", scales::percent(n_1m_after / n_1m_before))
+  message("  Retain rate (1M): ", n_1m_retain_pct, "%")
 
   # RETURN RESULTS
   list(

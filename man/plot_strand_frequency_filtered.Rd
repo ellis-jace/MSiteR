@@ -13,25 +13,20 @@ plot_strand_frequency_filtered(
 )
 }
 \arguments{
-\item{result}{Output from \code{\link[=run_strand_filtering]{run_strand_filtering()}}}
+\item{result}{Output from \code{\link[=run_strand_filtering]{run_strand_filtering()}}.}
 
-\item{outdir}{Optional directory to save PDF. If NULL, plot is not saved.}
+\item{outdir}{Optional directory in which to save a PDF.}
 
-\item{sample_name}{Sample ID for filename (default "sample")}
+\item{sample_name}{Sample ID used in the PDF filename.}
 
-\item{reads_max}{Maximum read depth to display (default 75)}
+\item{reads_max}{Maximum read depth displayed.}
 
-\item{show_thresholds}{Logical: add threshold cutoff lines? (default FALSE)}
+\item{show_thresholds}{Add lines for the actual filtering cutoffs.}
 }
 \value{
-ggplot object
+A ggplot object (invisibly).
 }
 \description{
-Shows the distribution of read depths AFTER filtering thresholds are applied.
-Demonstrates the effect of the filtering step. Optionally display threshold
-cutoff lines to visualize where filtering occurred.
-}
-\details{
-When \code{show_thresholds = TRUE}, dashed vertical lines mark the minimum reads
-per strand in the filtered dataset, showing exactly where filtering boundaries are.
+Plot read-depth frequencies after strand filtering. The function reconstructs
+a plotting table from the wide \code{merged} output of \code{\link[=run_strand_filtering]{run_strand_filtering()}}.
 }

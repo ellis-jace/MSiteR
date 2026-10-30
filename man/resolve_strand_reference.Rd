@@ -18,4 +18,3 @@ Accepts a genome FASTA path (\code{.fna}, \code{.fa}, \code{.fasta}, or any file
 first line starts with \code{>}), a delimited table path, or a data.frame/data.table.
 Returns a data.table with columns \code{chr}, \code{CpG_pos}, \code{strand}.
 }
-\keyword{internal}

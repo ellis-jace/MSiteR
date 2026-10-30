@@ -49,18 +49,46 @@ read_pipeline_files <- function(files) {
       }
       dt <- data.table::fread(x, header = FALSE)
     } else if (is.data.frame(x)) {
-      dt <- data.table::as.data.table(x)   # copies, so the caller's object is untouched
+      dt <- data.table::copy(data.table::as.data.table(x))
     } else {
       stop("Element '", name, "' must be a single file path or a data.frame/data.table.")
     }
 
-    if (ncol(dt) == 6) {
-      data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML", "strand"))
-    } else if (ncol(dt) == 5) {
-      data.table::setnames(dt, c("chr", "pos", "TRead", "MRead", "ML"))
-    } else {
+    if (!(ncol(dt) %in% c(5L, 6L))) {
       stop("Input for '", name, "' has ", ncol(dt),
            " columns; expected 5 or 6 (chr, pos, TRead, MRead, ML[, strand]).")
+    }
+
+    # Keep already-correct column names, regardless of their order. Unnamed
+    # files (V1, V2, ...) retain the original positional interpretation.
+    if ("ml" %in% names(dt) && !"ML" %in% names(dt)) {
+      data.table::setnames(dt, "ml", "ML")
+    }
+    if ("Strand" %in% names(dt) && !"strand" %in% names(dt)) {
+      data.table::setnames(dt, "Strand", "strand")
+    }
+    required <- c("chr", "pos", "TRead", "MRead", "ML")
+    if (all(required %in% names(dt)) &&
+        (ncol(dt) == 5L || "strand" %in% names(dt))) {
+      data.table::setcolorder(dt, c(required, if (ncol(dt) == 6L) "strand"))
+    } else if (all(grepl("^V[0-9]+$", names(dt)))) {
+      data.table::setnames(dt, c(required, if (ncol(dt) == 6L) "strand"))
+    } else {
+      stop("Input for '", name, "' has unexpected column names: ",
+           paste(names(dt), collapse = ", "),
+           ". Supply named columns or a headerless 5/6-column file.")
+    }
+
+    if (anyNA(dt$chr) || anyNA(dt$pos) || anyNA(dt$TRead) || anyNA(dt$MRead) ||
+        !is.numeric(dt$pos) || !is.numeric(dt$TRead) ||
+        !is.numeric(dt$MRead) || any(dt$pos < 1) ||
+        any(dt$TRead < 0) || any(dt$MRead < 0) ||
+        any(dt$MRead > dt$TRead)) {
+      stop("Input for '", name, "' contains invalid coordinates or read counts.")
+    }
+    if ("strand" %in% names(dt) &&
+        (anyNA(dt$strand) || any(!dt$strand %in% c("+", "-")))) {
+      stop("Input for '", name, "' has strand values other than '+' and '-'.")
     }
     dt
   })

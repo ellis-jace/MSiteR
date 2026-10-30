@@ -13,21 +13,31 @@
 #'   `strand_reference_for`.
 #' @param strand_reference_for Character vector of pipeline names needing
 #'   `strand_reference` (default `"Biscuit"`).
+#' @param thresholds Optional global strand thresholds. If NULL, calculate
+#'   thresholds from this chunk (the original behavior).
+#' @param unfiltered_only If TRUE, return only the pre-filter long table. This
+#'   supports the first pass of chromosome-wise processing.
 #'
 #' @return A list with `merged` (the merged, strand-filtered
 #'   data.table), and `unfiltered` (raw, chromosome-specific data.table)
 #' @export
 run_pipeline_on_chunk <- function(chr_pipelines,
                                   strand_reference = NULL,
-                                  strand_reference_for = 'Biscuit') {
+                                  strand_reference_for = 'Biscuit',
+                                  thresholds = NULL,
+                                  unfiltered_only = FALSE) {
   chr_collapsed <- Map(function(x, name) {
-    #ref <- if (name %in% strand_reference_for) strand_reference else NULL
-    collapse_cpg_strand(x, strand_reference = strand_reference)
+    ref <- if (name %in% strand_reference_for) strand_reference else NULL
+    collapse_cpg_strand(x, strand_reference = ref)
   }, chr_pipelines, names(chr_pipelines))
 
   chr_unfiltered <- prepare_unfiltered_dt(chr_collapsed)
-  chr_thresholds <- calculate_strand_thresholds(chr_unfiltered)
-  chr_filtered <- Map(function(dt, name) filter_by_strand(dt, name, chr_thresholds),
+  if (unfiltered_only) return(chr_unfiltered)
+
+  if (is.null(thresholds)) {
+    thresholds <- calculate_strand_thresholds(chr_unfiltered)
+  }
+  chr_filtered <- Map(function(dt, name) filter_by_strand(dt, name, thresholds),
                       chr_collapsed, names(chr_collapsed))
   chr_merged <- merge_filtered_pipelines(chr_filtered)
 

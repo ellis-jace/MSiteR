@@ -18,4 +18,6 @@ calculate_consensus_stats(dt)
 Adds \code{n_methods} (how many pipelines called each site), and median read
 depth / methylation level across whichever pipelines called it, to a
 wide table produced by \code{\link[=merge_filtered_pipelines]{merge_filtered_pipelines()}}.
+\code{median_Mread} is the rounded \emph{product} of median depth and median
+methylation level, not the median of the observed \verb{_MR} columns.
 }

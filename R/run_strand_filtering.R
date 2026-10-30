@@ -31,11 +31,8 @@ run_strand_filtering <- function(pipelines,
                                        strand_reference_for = "Biscuit",
                                        chunk_by_chromosome = FALSE) {
 
-  # Only standardize if something in the list is not already a data.table
-  all_tables <- all(vapply(pipelines, data.table::is.data.table, logical(1)))
-  if (!all_tables) {
-    pipelines <- read_pipeline_files(pipelines)
-  }
+  # Validate and normalize consistently, including already-loaded data.tables.
+  pipelines <- read_pipeline_files(pipelines)
 
   # Parse the reference once. A table passes through unchanged.
   if (!is.null(strand_reference)) {
@@ -52,27 +49,38 @@ run_strand_filtering <- function(pipelines,
     list(merged = result$merged, thresholds = thresholds, unfiltered = result$unfiltered)
 
   } else {
-    # Chunked behavior: process one chromosome at a time
-    chunks <- chunk_by_chromosome(pipelines)
+    # Do not construct an in-memory list containing all chromosome subsets.
+    chromosomes <- sort(unique(unlist(lapply(pipelines, function(x) x$chr),
+                                      use.names = FALSE)))
+    if (length(chromosomes) == 0L) stop("No chromosomes in the input pipelines.")
 
-    all_merged <- list()
-    all_unfiltered <- list()
-
-    for (chr in names(chunks)) {
-      result <- run_pipeline_on_chunk(chunks[[chr]],
-                                      strand_reference,
-                                      strand_reference_for)
-      all_merged[[chr]] <- result$merged
-      all_unfiltered[[chr]] <- result$unfiltered
-
-      rm(result)
-      gc(verbose = FALSE)
+    get_chunk <- function(chr_name) {
+      lapply(pipelines, function(x) x[x$chr == chr_name, ])
+    }
+    get_reference <- function(chr_name) {
+      if (is.null(strand_reference)) return(NULL)
+      strand_reference[strand_reference$chr == chr_name, ]
     }
 
-    # Combine and recalculate global thresholds
-    unfiltered <- data.table::rbindlist(all_unfiltered)
-    merged <- data.table::rbindlist(all_merged)
+    # Pass 1: collect pre-filter data to calculate ONE set of global cutoffs.
+    all_unfiltered <- lapply(chromosomes, function(chr_name) {
+      run_pipeline_on_chunk(get_chunk(chr_name),
+                            strand_reference = get_reference(chr_name),
+                            strand_reference_for = strand_reference_for,
+                            unfiltered_only = TRUE)
+    })
+    unfiltered <- data.table::rbindlist(all_unfiltered, use.names = TRUE)
+    rm(all_unfiltered)
     thresholds <- calculate_strand_thresholds(unfiltered)
+
+    # Pass 2: filter each chromosome using the SAME global cutoffs.
+    all_merged <- lapply(chromosomes, function(chr_name) {
+      run_pipeline_on_chunk(get_chunk(chr_name),
+                            strand_reference = get_reference(chr_name),
+                            strand_reference_for = strand_reference_for,
+                            thresholds = thresholds)$merged
+    })
+    merged <- data.table::rbindlist(all_merged, use.names = TRUE, fill = TRUE)
 
     list(merged = merged, thresholds = thresholds, unfiltered = unfiltered)
   }

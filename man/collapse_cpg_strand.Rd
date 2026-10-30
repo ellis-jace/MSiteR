@@ -2,26 +2,42 @@
 % Please edit documentation in R/collapse_cpg_strand.R
 \name{collapse_cpg_strand}
 \alias{collapse_cpg_strand}
-\title{Collapse +/- strand CpG calls into symmetric per-site totals}
+\title{Collapse CpG Calls Across Complementary Strands}
 \usage{
 collapse_cpg_strand(input, strand_reference = NULL)
 }
 \arguments{
-\item{input}{A data.table with columns \verb{chr, pos, TRead, MRead, ML}, and
-optionally \code{strand}.}
+\item{input}{A data.frame, data.table, or headerless file path
+containing CpG methylation calls. Required columns are
+\code{chr}, \code{pos}, \code{TRead}, and \code{MRead}. A \code{strand} column
+is required unless \code{strand_reference} is provided.}
 
-\item{strand_reference}{Optional. A genome FASTA path, a table file path,
-or a data.frame/data.table with columns \code{chr}, \code{CpG_pos}, and \code{strand}.
-Required when \code{input} has no \code{strand} column.}
+\item{strand_reference}{Optional reference containing
+\code{chr}, \code{CpG_pos}, and \code{strand}. Can be a data.frame,
+data.table, FASTA file path, or delimited table path.
+Used when the input lacks strand information.}
 }
 \value{
-A data.table with columns \verb{chr, pos, TRead, MRead, ML, n}, one
-row per symmetric CpG site. \code{pos} is the CpG's C position.
+A data.table containing:
+\describe{
+\item{chr}{Chromosome identifier.}
+\item{pos}{Forward-strand CpG position.}
+\item{TRead}{Combined total read count.}
+\item{MRead}{Combined methylated read count.}
+\item{ML}{Recalculated methylation level.}
+\item{n}{Number of distinct strands supporting the site (1 or 2).}
+}
 }
 \description{
-Collapses complementary +/- strand rows for the same CpG into one site,
-summing read counts and recomputing methylation level. Input must already
-have standard column names (see \code{\link[=read_pipeline_files]{read_pipeline_files()}}). If \code{input} has no
-\code{strand} column (e.g. Biscuit output), strand is joined in from
-\code{strand_reference}.
+Combines methylation calls from the forward (+) and reverse (-)
+strands into a single CpG site. Reverse-strand positions are
+shifted by one base pair to align with the forward-strand cytosine.
+}
+\details{
+Total and methylated read counts are summed across observations,
+and methylation levels are recalculated from the combined counts.
+
+Input observations without a matching reference position are
+discarded with a warning. Duplicate observations from the same
+strand contribute to read counts but count as one strand.
 }
